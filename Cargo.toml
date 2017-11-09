@@ -1,0 +1,26 @@
+[package]
+name = "gnomeconnect"
+version = "0.1.0"
+authors = ["Paul Maruhn <paulmaruhn@gmail.com>"]
+
+[dependencies]
+serde_derive = "1.0"
+serde_json = "1.0"
+serde = "1.0"
+notify-rust = "^3"
+
+
+[dependencies.gtk]
+git = "https://github.com/gtk-rs/gtk.git"
+version = "0.2.0"
+features = ["v3_10"]
+
+[dependencies.gio]
+git = "https://github.com/gtk-rs/gio.git"
+version = "0.2.0"
+features = ["v2_40"]
+
+
+[[bin]]
+name = "GNOMEConnect"
+path = "src/main.rs"
