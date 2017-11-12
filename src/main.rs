@@ -20,6 +20,7 @@ use gtk::{
 use gnomeconnect::events;
 use gnomeconnect::events::Report;
 use std::net::TcpListener;
+use std::net::UdpSocket;
 use std::io::{Read, Write};
 use std::sync::mpsc;
 use std::thread;
@@ -28,6 +29,7 @@ use gio::prelude::*;
 
 
 static BIND_ADDR: &str = "0.0.0.0:4112";
+const BUFFER_SIZE: usize = 65536;
 
 fn main() {
 
@@ -57,6 +59,30 @@ fn main() {
                 }
             }
         };
+    });
+
+    // Udp listener for discovery
+    thread::spawn(move || {
+        println!("start discovery service at {}", BIND_ADDR);
+        let udp_sock = UdpSocket::bind(BIND_ADDR).unwrap();
+
+        loop {
+            let mut buffer = [0; BUFFER_SIZE];
+            let (length, remote_addr) = udp_sock.recv_from(&mut buffer).unwrap();
+
+            println!("{:#?}", Vec::from(&buffer[0..length]));
+
+            let send = b"
+            {
+                \"hostname\" = \"Stallman's MacBook Air\",
+                \"fingerprint\" = \"C18F 9C3A 8C4A 3E9C 7E77  C3C7 D016 12DC 4E6D 2A56\",
+                
+            }
+            udp_sock.send_to(b"{
+
+            }, addr)
+
+        }
     });
 
 
@@ -115,7 +141,7 @@ fn main() {
     // Window shit
 
 
-        
+
 
     let window = ApplicationWindow::new(&gtk_application);
     window.set_title("First GTK+ Program");
