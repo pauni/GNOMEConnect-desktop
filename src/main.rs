@@ -2,7 +2,14 @@ extern crate gtk;
 extern crate gio;
 extern crate gnomeconnect;
 extern crate serde_json;
+#[macro_use]
+extern crate serde_derive;
 extern crate notify_rust;
+extern crate hostname;
+
+
+mod transponder;
+mod config;
 
 
 use gtk::prelude::*;
@@ -61,30 +68,8 @@ fn main() {
         };
     });
 
-    // Udp listener for discovery
-    thread::spawn(move || {
-        println!("start discovery service at {}", BIND_ADDR);
-        let udp_sock = UdpSocket::bind(BIND_ADDR).unwrap();
 
-        loop {
-            let mut buffer = [0; BUFFER_SIZE];
-            let (length, remote_addr) = udp_sock.recv_from(&mut buffer).unwrap();
-
-            println!("{:#?}", Vec::from(&buffer[0..length]));
-
-            let send = b"
-{
-    \"hostname\" = \"Stallman's MacBook Air\",
-    \"fingerprint\" = \"C18F 9C3A 8C4A 3E9C 7E77  C3C7 D016 12DC 4E6D 2A56\",
-    \"os\": \"Windows 10\"
-}";
-
-
-            udp_sock.send_to(send, remote_addr).unwrap();
-
-            println!("data sent");
-        }
-    });
+    transponder::start();
 
 
 
@@ -99,7 +84,7 @@ fn main() {
 
 
     let gtk_application = gtk::Application::new(
-        "org.pauni.gnomeconnect",
+        "org.gnomeconnect.gnomeconnect",
         gio::ApplicationFlags::empty()
     ).unwrap();
 
@@ -116,32 +101,8 @@ fn main() {
         }
     }
 
-    gtk_application.set_default();
-
-
-
-    // Notification playground
-
-    let notification = gio::Notification::new("foobar");
-
-    notification.set_body("Notification!!!");
-    notification.set_title("Notification!!!");
-    // notification.set_icon(&gio::Icon::new_for_string("phone").expect("noooo icon :("));
-
-
-    gtk_application.send_notification(
-        "startup",
-        &notification
-    );
-    println!("Notification sent");
-
-
-
-
 
     // Window shit
-
-
 
 
     let window = ApplicationWindow::new(&gtk_application);
@@ -183,17 +144,25 @@ fn main() {
             .show()
             .unwrap();
 
-
-        gtk_application.send_notification(
-            "org.pauni.gnomeconnect",
-            &notification
-        );
-        println!("Notification sent");
-
     });
 
     gtk::main();
 }
+
+
+
+
+
+fn config_new_remote_device() {
+    let window = gtk::Window::new(gtk::WindowType::Popup);
+
+    
+
+
+
+}
+
+
 
 
 
