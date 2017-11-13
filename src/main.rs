@@ -73,15 +73,16 @@ fn main() {
             println!("{:#?}", Vec::from(&buffer[0..length]));
 
             let send = b"
-            {
-                \"hostname\" = \"Stallman's MacBook Air\",
-                \"fingerprint\" = \"C18F 9C3A 8C4A 3E9C 7E77  C3C7 D016 12DC 4E6D 2A56\",
-                
-            }
-            udp_sock.send_to(b"{
+{
+    \"hostname\" = \"Stallman's MacBook Air\",
+    \"fingerprint\" = \"C18F 9C3A 8C4A 3E9C 7E77  C3C7 D016 12DC 4E6D 2A56\",
+    \"os\": \"Windows 10\"
+}";
 
-            }, addr)
 
+            udp_sock.send_to(send, remote_addr).unwrap();
+
+            println!("data sent");
         }
     });
 
