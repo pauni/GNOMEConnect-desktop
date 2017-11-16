@@ -23,7 +23,7 @@ pub fn start() {
     thread::spawn(move || {
         println!("start listening at {}", super::BIND_ADDR);
         listener_loop(tcp_server);
-    });
+    }).join();
 
     println!("event server thread spawned");
 }
@@ -41,7 +41,7 @@ fn listener_loop(tcp_server: TcpListener) {
 
         let package = match Packet::from_string(data) {
             Err(e) => {
-                eprintln!("received malformed package");
+                eprintln!("received malformed package: {}", e);
                 continue;
             },
             Ok(r) => r
@@ -68,18 +68,21 @@ pub struct Packet {
     pub fingerprint: String,
     pub sender: String,
     pub version: String,
-    #[serde(rename = "type")]
-    pub types: Types
+    // the encrypted payload
+    pub payload: String
 }
 
 
 
 
 impl Packet {
-    pub fn from_string(string: String) -> Result<Self, ()> {
-        let packet: Self = serde_json::from_str(&string).unwrap();
+    pub fn from_string(string: String) -> Result<Self, serde_json::error::Error> {
+        serde_json::from_str::<Packet>(&string)
 
-        Ok(packet)
+        // match serde_json::from_str::<Packet>(&string) {
+        //     Ok(r) => Ok(r),
+        //     Err(e) => Err(e)
+        // }
     }
 }
 

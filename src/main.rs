@@ -44,32 +44,25 @@ const BUFFER_SIZE: usize = 65536;
 
 
 fn main() {
-
-    let foo = server::event::Packet {
-        fingerprint: "foobar".into(),
-        sender: "oneplus3".into(),
-        version: "0.0.1-beta".into(),
-        types: server::event::Types::PairRequest {
-            public_key: "<dat public key>".into()
-        }
-    };
-
-
-    let prettyjson = serde_json::to_string_pretty(&foo).unwrap();
-
-    println!("{}", prettyjson);
-
-    std::process::exit(0);
+    // 
+    // let foo = server::event::Packet {
+    //     fingerprint: "foobar".into(),
+    //     sender: "oneplus3".into(),
+    //     version: "0.0.1-beta".into(),
+    //     payload: "foobar".to_string()
+    // };
+    //
+    //
+    // let prettyjson = serde_json::to_string_pretty(&foo).unwrap();
+    //
+    // println!("{}", prettyjson);
+    //
+    // std::process::exit(0);
 
 
 
 
     server::transponder::start();
     let event_listener = server::event::start();
-
-
-
-
-
 
 }
