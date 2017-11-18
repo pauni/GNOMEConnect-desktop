@@ -87,15 +87,6 @@ impl Packet {
 }
 
 
-
-
-
-
-
-
-
-
-
 fn process_event(report: Packet) {
 
     println!("{:#?}", report);

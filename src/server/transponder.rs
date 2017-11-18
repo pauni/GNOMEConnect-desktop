@@ -72,7 +72,7 @@ fn transponder_loop(udp_sock: UdpSocket) {
         let mut buffer = [0; BUFFER_SIZE];
         let (length, remote_addr) = udp_sock.recv_from(&mut buffer).unwrap();
 
-        println!("{:#?}", Vec::from(&buffer[0..length]));
+        println!("{:#?}", String::from_utf8(Vec::from(&buffer[0..length])));
 
 
         let echo = EchoSignal {
@@ -86,8 +86,8 @@ fn transponder_loop(udp_sock: UdpSocket) {
         let send = serde_json::to_string(&echo).unwrap();
 
 
-        udp_sock.send_to(&send.into_bytes(), remote_addr).unwrap();
+        udp_sock.send_to(&send.clone().into_bytes(), remote_addr).unwrap();
 
-        println!("data sent");
+        println!("data sent: {}", send);
     }
 }
