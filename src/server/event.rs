@@ -33,11 +33,12 @@ pub fn start() {
 
 
 fn listener_loop(tcp_server: TcpListener) {
-    for conn in tcp_server.incoming() {
+    for stream in tcp_server.incoming() {
         let mut data = String::new();
-        let mut stream = conn.unwrap();
+        stream.unwrap().read_to_string(&mut data);
 
-        stream.read_to_string(&mut data);
+
+
 
         let package = match Packet::from_string(data) {
             Err(e) => {
