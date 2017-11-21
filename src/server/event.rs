@@ -38,8 +38,6 @@ fn listener_loop(tcp_server: TcpListener) {
         stream.unwrap().read_to_string(&mut data);
 
 
-
-
         let package = match Packet::from_string(data) {
             Err(e) => {
                 eprintln!("received malformed package: {}", e);

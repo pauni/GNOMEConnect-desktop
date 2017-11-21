@@ -34,7 +34,7 @@ use gio::prelude::*;
 
 
 
-fn foo() {
+fn gui() {
     if gtk::init().is_err() {
         println!("Failed to initialize GTK.");
         return;
