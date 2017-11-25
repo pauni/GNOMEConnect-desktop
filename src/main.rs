@@ -6,6 +6,9 @@ extern crate serde_json;
 extern crate serde_derive;
 extern crate notify_rust;
 extern crate hostname;
+#[macro_use]
+extern crate log;
+extern crate pretty_env_logger;
 
 
 mod server;
@@ -44,39 +47,41 @@ pub const BUFFER_SIZE: usize = 65536;
 
 
 fn main() {
-
-    let packet = server::Packet {
-        hostname: "oneplus3".into(),
-        fingerprint: "aaaded0f-d6ed-41a7-8c17-761360b25297".into(),
-        version: "0.0.0.0.1-prealpha".into(),
-        payload: server::PacketType::PairRequest (
-            server::PairRequest {
-                os: "macos".into(),
-                model: "macpro".into(),
-                public_key: "tschuuu".into(),
-                fingerprint: "fooobar".into()
-        })
-    };
+    pretty_env_logger::init().unwrap();
 
 
-
-    let json_string = serde_json::to_string_pretty(&packet).unwrap();
-
-    println!("{}", json_string);
+    // let packet = server::Packet {
+    //     hostname: "oneplus3".into(),
+    //     fingerprint: "aaaded0f-d6ed-41a7-8c17-761360b25297".into(),
+    //     version: "0.0.0.0.1-prealpha".into(),
+    //     payload: server::PacketType::PairRequest (
+    //         server::PairRequest {
+    //             os: "macos".into(),
+    //             model: "macpro".into(),
+    //             public_key: "tschuuu".into(),
+    //             fingerprint: "fooobar".into()
+    //     })
+    // };
 
 
 
+    // let json_string = serde_json::to_string_pretty(&packet).unwrap();
+
+    // println!("{}", json_string);
 
 
 
 
-    server::test_it();
+
+
+
+    // server::test_it();
 
     server::transponder::start();
 
 
 
-    let event_listener = server::event::start();
+    let event_listener = server::gcserver::start();
     std::process::exit(0);
 
 

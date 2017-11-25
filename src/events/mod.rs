@@ -4,6 +4,8 @@
 
 
 
+// TODO: move to dedicated mod
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "report_type", content = "report")]
 pub enum Report {
@@ -52,3 +54,17 @@ pub struct Misc {
     pub phone_unlocked: bool,
     pub display_active: bool,
 }
+
+
+
+
+
+
+
+
+
+
+
+//----------------------//
+// Available  datatypes //
+//----------------------//
