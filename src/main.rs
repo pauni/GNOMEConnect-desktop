@@ -1,7 +1,9 @@
 extern crate gtk;
 extern crate gio;
 extern crate gnomeconnect;
+#[macro_use]
 extern crate serde_json;
+extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate notify_rust;
@@ -46,8 +48,31 @@ pub const BUFFER_SIZE: usize = 65536;
 
 
 
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct Foo<T> {
+    foo: T
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct Bar {
+    bar: String
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct Baz {
+    baz: String
+}
+
+
+
+
+
+
 fn main() {
     pretty_env_logger::init().unwrap();
+    
+
 
 
     // let packet = server::Packet {

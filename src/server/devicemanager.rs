@@ -48,7 +48,7 @@ impl From<gcserver::PairRequest> for Device {
     fn from(pr: gcserver::PairRequest) -> Self {
         Device::new(
             pr.hostname,
-            pr.model,
+            pr.device,
             pr.os,
             pr.public_key,
             pr.fingerprint
@@ -76,6 +76,8 @@ impl DeviceManager {
     }
 
     pub fn pair_device(&mut self, pr: super::gcserver::PairRequest) {
+        info!("pair device {}", pr.fingerprint);
+        
         self.devices.insert(
             pr.clone().fingerprint,
             Device::from(pr)
