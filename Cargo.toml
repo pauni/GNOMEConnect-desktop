@@ -15,12 +15,10 @@ pretty_env_logger = "0.1.1"
 
 
 [dependencies.gtk]
-git = "https://github.com/gtk-rs/gtk.git"
 version = "0.2.0"
 features = ["v3_10"]
 
 [dependencies.gio]
-git = "https://github.com/gtk-rs/gio.git"
 version = "0.2.0"
 features = ["v2_40"]
 
