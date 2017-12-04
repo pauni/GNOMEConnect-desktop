@@ -10,3 +10,9 @@ rust:
   - stable
   - beta
   - nightly
+
+notifications:
+  slack:
+    rooms:
+      - pauni:dbpXKu6ldWOjEWqKyL4IbDxK#general
+      - pauni:dbpXKu6ldWOjEWqKyL4IbDxK#ci
