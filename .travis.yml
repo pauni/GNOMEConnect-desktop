@@ -1,4 +1,12 @@
 language: rust
+env:
+  - RUST_LOG=warn
 script:
   - cargo build --verbose --all
   - cargo test --verbose --all
+
+
+rust:
+  - stable
+  - beta
+  - nightly
