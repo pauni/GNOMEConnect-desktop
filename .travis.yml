@@ -1,11 +1,10 @@
 language: rust
-#env:
-#  - RUST_LOG=warn
-#  - RUST_BACKTRACE=1
+env:
+  - RUST_LOG=warn
+script:
+  - cargo build --verbose --all
+  - cargo test --verbose --all
 
-#script:
-#  - cargo build --all
-#  - cargo test --all
 
 rust:
   - stable
