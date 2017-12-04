@@ -7,6 +7,10 @@ language: rust
 #  - cargo build --all
 #  - cargo test --all
 
+before_install:
+  - sudo apt -y update
+  - sudo apt -y install libdbus-1-dev
+
 rust:
   - stable
   - beta
