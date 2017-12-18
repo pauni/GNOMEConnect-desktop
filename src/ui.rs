@@ -20,6 +20,7 @@ use gtk::{
     WindowType,
     ApplicationWindow,
     HeaderBar,
+    ComboBoxText,
 };
 use gnomeconnect::events;
 use gnomeconnect::events::Report;
@@ -34,7 +35,7 @@ use gio::prelude::*;
 
 
 
-fn gui() {
+pub fn gui() {
     if gtk::init().is_err() {
         println!("Failed to initialize GTK.");
         return;
@@ -71,9 +72,11 @@ fn gui() {
     let header_bar = HeaderBar::new();
     let btn_win = window.clone();
     header_bar.add(&{
+        let device_dropdown = ComboBoxText::new();
+
+
         let button = Button::new_with_label("connect");
         button.set_always_show_image(true);
-        button.set_name(".suggested-action");
         button.connect_clicked(move |_| config_new_remote_device(&btn_win));
         button
     });
@@ -121,7 +124,6 @@ fn config_new_remote_device(parent: &gtk::Window) {
 
     let button = Button::new_with_label("connect");
     button.set_always_show_image(true);
-    button.set_name(".suggested-action");
     let window_button = window.clone();
     button.connect_clicked(move |_| window_button.close());
 

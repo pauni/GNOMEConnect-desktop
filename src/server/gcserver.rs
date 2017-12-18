@@ -14,6 +14,16 @@ use std::thread;
 use server::devicemanager;
 use hostname::get_hostname;
 use std;
+use server::packets;
+use server::packets::request;
+use server::packets::response;
+
+
+
+// all connections related stuff here
+// device pairing, encryption, etc
+// handly of userdata in seperate module
+
 
 
 
@@ -36,7 +46,6 @@ pub fn start() {
         info!("start listening at {}", super::BIND_ADDR);
         start_listener_loop(tcp_server);
     }).join();
-
 }
 
 
@@ -50,39 +59,44 @@ fn start_listener_loop(tcp_server: TcpListener) {
 
 
     for stream in tcp_server.incoming() {
+        debug!("TCPconnection established");
+
+
         let mut buf_stream = BufReader::new(stream.unwrap());
 
+        // read the data
         let mut data = String::new();
         buf_stream.read_line(&mut data).unwrap();
 
-
-        let packet = match Packet::from_string(data.clone()) {
-            Err(e) => {
-                error!("received malformed package: {}: {}", e, data);
-
-                buf_stream.into_inner().write_all (
-                    "dafuq you wanna say, bro?".as_bytes()
-                ).unwrap();
-
-                continue;
-            },
-            Ok(r) => r
-        };
-
-
-
-        let respkt = gcs.process_packet(packet);
+        debug!("read {:6} bytes", data.len());
 
         let mut stream = buf_stream.into_inner();
 
-        match respkt {
-            Some(r) => stream.write_all(serde_json::to_string(&r).unwrap().as_bytes()).unwrap(),
-            None => continue
-        };
+        match serde_json::from_str(&data) {
+            Err(e) => {
+                error!("received malformed package: {}: {}", e, data);
 
-        drop(stream);
+                stream.write_all (
+                    "dafuq you wanna say, bro?".as_bytes()
+                ).unwrap();
+            },
+            Ok(r) => {
+
+                let respkt = gcs.process_packet(r);
+
+
+                match respkt {
+                    Some(r) => stream.write_all(serde_json::to_string(&r).unwrap().as_bytes()).unwrap(),
+                    None => {}
+                };
+            }
+        };
     };
 }
+
+
+
+
 
 
 pub struct GCServer {
@@ -102,109 +116,31 @@ impl GCServer {
     }
 
 
-    fn process_packet(&mut self, packet: Packet) -> Option<Packet> {
-        info!("received package from {}", packet.fingerprint());
-
+    fn process_packet(
+        &mut self,
+        packet: packets::TransportPacket
+    ) -> Option<packets::TransportPacket>
+    {
+        debug!("received package from {}", packet.fingerprint);
 
         match packet.payload {
-            PacketType::PairRequest(r) => {
+            packets::Payload::PairRequest(r) => {
                 debug!("received Pairrequest from {}", packet.fingerprint);
 
-                self.dev_mngr.pair_device(r);
+                // self.dev_mngr.pair_device(r);
 
-                Some(Packet::new(
-                    PacketType::PairRequest(
-                        PairRequest::new_for_me()
-                    )
-                ))
+                let packet = packets::TransportPacket {
+                    fingerprint: "noot".into(),
+                    version: "nope".into(),
+                    payload: packets::Payload::PairResponse(packets::PairRequest::new_for_me()),
+                };
+
+                Some(packet)
             },
             _ => {
                 warn!("packet type not supported");
                 None
             }
-        }
-    }
-}
-
-
-
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Packet {
-    pub fingerprint: String,
-    pub version: String,
-    #[serde(rename = "payload")]
-    pub payload: PacketType,
-}
-
-
-
-impl Packet {
-
-    fn new(payload: PacketType) -> Self {
-        Self {
-            fingerprint: "footprint".into(),
-            version: PROTOCOL_VERSION.into(),
-            payload: payload,
-        }
-    }
-
-
-    pub fn from_string(string: String) -> Result<Self, serde_json::error::Error> {
-        serde_json::from_str::<Packet>(&string)
-        // match serde_json::from_str::<Packet>(&string)
-    }
-
-
-    fn fingerprint(&self) -> String {
-        self.fingerprint.clone()
-    }
-}
-
-
-
-
-
-
-//----------------------//
-// All posible payloads //
-//----------------------//
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "payload_type", content = "payload_data", rename_all = "lowercase")]
-pub enum PacketType {
-    PairRequest(PairRequest),
-    UserData(String),
-}
-
-
-
-
-
-//---------------------------------//
-// Available unencrypted datatypes //
-//---------------------------------//
-
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PairRequest {
-    pub hostname: String,
-    pub device: String,
-    pub os: String,
-    pub public_key: String,
-    pub fingerprint: String,
-}
-
-
-
-impl PairRequest {
-    fn new_for_me() -> Self {
-        Self {
-            hostname: get_hostname().unwrap(),
-            device: "foo".into(),
-            os: "debian".into(),
-            public_key: "no boi".into(),
-            fingerprint: "noot".into(),
         }
     }
 }

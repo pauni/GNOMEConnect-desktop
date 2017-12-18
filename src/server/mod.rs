@@ -1,6 +1,7 @@
 pub mod gcserver;
 pub mod transponder;
 pub mod devicemanager;
+pub mod packets;
 
 use serde_json;
 use events;

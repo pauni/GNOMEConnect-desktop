@@ -7,6 +7,8 @@ use std::sync::mpsc;
 use std::thread;
 use std::collections::HashMap;
 use server::gcserver;
+use super::packets;
+use super::packets::request;
 
 
 
@@ -44,8 +46,8 @@ impl Device {
 
 
 
-impl From<gcserver::PairRequest> for Device {
-    fn from(pr: gcserver::PairRequest) -> Self {
+impl From<packets::request::PairRequest> for Device {
+    fn from(pr: packets::request::PairRequest) -> Self {
         Device::new(
             pr.hostname,
             pr.device,
@@ -75,9 +77,9 @@ impl DeviceManager {
         self.devices.contains_key(&fingerprint)
     }
 
-    pub fn pair_device(&mut self, pr: super::gcserver::PairRequest) {
+    pub fn pair_device(&mut self, pr: request::PairRequest) {
         info!("pair device {}", pr.fingerprint);
-        
+
         self.devices.insert(
             pr.clone().fingerprint,
             Device::from(pr)
