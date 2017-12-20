@@ -44,6 +44,8 @@ pub fn start_listener_loop(tcp_server: TcpListener)  {
 
         let mut stream = buf_stream.into_inner();
 
+        debug!("{}", data);
+
         match serde_json::from_str::<packets::TransportPacket>(&data) {
             Err(e) => {
                 error!("received malformed package: {}: {}", e, data);
@@ -58,6 +60,8 @@ pub fn start_listener_loop(tcp_server: TcpListener)  {
 
             },
             Ok(r) => {
+
+                debug!("parsed packet successfully");
 
                 let packet = packets::TransportPacket {
                     src_fingerprint: "noot".into(),
