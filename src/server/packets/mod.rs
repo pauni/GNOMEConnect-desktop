@@ -67,7 +67,7 @@ impl Device {
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename = "snake_case")]
+#[serde(rename = "lowercase")]
 pub enum PairingAction {
     Request,
     Denied,
