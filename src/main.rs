@@ -31,6 +31,12 @@ pub const BUFFER_SIZE: usize = 65536;
 
 fn main() {
     pretty_env_logger::init().unwrap();
+
+
+    ui::gui();
+
+
+
     server::transponder::start();
 
 
