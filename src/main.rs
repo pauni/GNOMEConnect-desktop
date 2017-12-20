@@ -19,10 +19,10 @@ mod ui;
 
 
 use gnomeconnect::events;
+use std::net::TcpListener;
 
 
-
-pub const BIND_ADDR: &str = "0.0.0.0:4112";
+pub const BIND_ADDR: &str = "127.0.0.1:4112";
 pub const BUFFER_SIZE: usize = 65536;
 
 
@@ -31,23 +31,23 @@ pub const BUFFER_SIZE: usize = 65536;
 
 fn main() {
     pretty_env_logger::init().unwrap();
-
-
-
     server::transponder::start();
 
-    let event_listener = server::gcserver::start();
+
+    let tcp_server = match TcpListener::bind(BIND_ADDR) {
+        Ok(s) => s,
+        Err(e) => panic!("can't bind to {}: {}", BIND_ADDR, e),
+    };
 
 
-    ui::gui();
+    server::gcserver::start_listener_loop(tcp_server);
+
+    // let gcserver = server::gcserver::GCServer::new(BIND_ADDR);
+
 
 
 
     std::process::exit(0);
-
-
-
-
 
 
 }

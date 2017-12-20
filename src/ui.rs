@@ -21,6 +21,8 @@ use gtk::{
     ApplicationWindow,
     HeaderBar,
     ComboBoxText,
+    ComboBox,
+    ComboBoxExt,
 };
 use gnomeconnect::events;
 use gnomeconnect::events::Report;
@@ -72,13 +74,15 @@ pub fn gui() {
     let header_bar = HeaderBar::new();
     let btn_win = window.clone();
     header_bar.add(&{
-        let device_dropdown = ComboBoxText::new();
+        let device_dropdown = gtk::MenuButton::new();
 
+        device_dropdown.add(&Button::new_with_label("foo"));
 
-        let button = Button::new_with_label("connect");
-        button.set_always_show_image(true);
-        button.connect_clicked(move |_| config_new_remote_device(&btn_win));
-        button
+        // device_dropdown.connect_changed(|e| {
+        //     println!("combobox clicked{:#?}", e);
+        // });
+
+        device_dropdown
     });
 
     header_bar.set_title("GNOMEConnect");
