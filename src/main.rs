@@ -22,7 +22,7 @@ use gnomeconnect::events;
 use std::net::TcpListener;
 
 
-pub const BIND_ADDR: &str = "127.0.0.1:4112";
+pub const BIND_ADDR: &str = "0.0.0.0:4112";
 pub const BUFFER_SIZE: usize = 65536;
 
 
