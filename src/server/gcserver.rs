@@ -175,7 +175,7 @@ impl GCServer {
                 Some(packets::Payload::Pairing(packets::Pairing {
                     action: packets::PairingAction::Accepted,
                     device: Some(packets::PairInfo {
-                        fingerprint: packet.dst_fingerprint,
+                        fingerprint: "packet.dst_fingerprint".into(),
                         public_key: "foo".into(),
                         os: "macOS".into(),
                         model: "GNOME-shell-3.26".into(),
