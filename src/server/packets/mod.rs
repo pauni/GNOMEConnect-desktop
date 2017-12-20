@@ -22,6 +22,7 @@ use serde::de::DeserializeOwned;
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename = "snake_case")]
 pub struct TransportPacket {
     pub dst_fingerprint: String,
     pub src_fingerprint: String,
@@ -33,7 +34,7 @@ pub struct TransportPacket {
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "payload_type", content = "payload_data")]
+#[serde(tag = "payload_type", content = "payload_data", rename = "snake_case")]
 pub enum Payload {
     Pairing(Pairing),
     Encrypted(String),
@@ -66,7 +67,7 @@ impl Device {
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde()]
+#[serde(rename = "snake_case")]
 pub enum PairingAction {
     Request,
     Denied,
@@ -76,7 +77,7 @@ pub enum PairingAction {
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde()]
+#[serde(rename = "snake_case")]
 pub struct PairInfo {
     pub fingerprint: String,
     pub public_key: String,
@@ -88,7 +89,7 @@ pub struct PairInfo {
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde()]
+#[serde(rename = "snake_case")]
 pub struct Pairing {
     pub action: PairingAction,
     pub device: Option<PairInfo>
