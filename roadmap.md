@@ -119,7 +119,7 @@ There are at the moment 2 txpes of payloads
 
 
 
-| Handy                        | Desktop                    |
+| Phone                        | Desktop                    |
 | :--------------------------- | -------------------------: |
 | Hello, i wanna pair with you |                            |
 |                              | Ok, lets share our keys    |
