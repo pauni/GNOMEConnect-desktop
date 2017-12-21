@@ -128,3 +128,8 @@ There are at the moment 2 txpes of payloads
 | E N C R Y P T E D _ N O W    | E N C R Y P T E D _ N O W  |
 | I am {name}, wanna marry me? |                            |
 |                              | Yes, i want                |
+| {sending 256 random bytes}   |                            |
+|                              | {sending 256 random bytes} |
+
+
+The tow 256 bytes long strings attached to each other are our secret password that is used for future communication
