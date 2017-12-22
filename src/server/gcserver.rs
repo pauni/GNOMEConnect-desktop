@@ -1,6 +1,7 @@
 use gnomeconnect::events;
 use gnomeconnect::events::Report;
 use hostname::get_hostname;
+use packets::TransportPacket;
 use serde_json;
 use server::devicemanager;
 use server::packets;
@@ -21,6 +22,8 @@ use std::thread;
 // handly of userdata in seperate module
 
 
+const PROTOCOL_VERSION: i64 = 45;
+
 
 
 
@@ -35,47 +38,6 @@ pub fn start_listener_loop(tcp_server: TcpListener)  {
         debug!("TCPconnection established");
 
 
-        let mut buf_stream = BufReader::new(stream.unwrap());
-
-        // read the data
-        let mut data = String::new();
-        buf_stream.read_line(&mut data).unwrap();
-
-        debug!("read {:6} bytes", data.len());
-
-        let mut stream = buf_stream.into_inner();
-
-        debug!("{}", data);
-
-        match serde_json::from_str::<packets::TransportPacket>(&data) {
-            Err(e) => {
-                error!("received malformed package: {}: {}", e, data);
-                std::io::stdout().flush();
-
-
-                stream.write_all (
-                    format!("{}: {}", e, data).as_bytes()
-                ).unwrap();
-
-                drop(stream);
-
-            },
-            Ok(r) => {
-
-                debug!("parsed packet successfully");
-
-                let packet = packets::TransportPacket {
-                    src_fingerprint: "noot".into(),
-                    dst_fingerprint: r.src_fingerprint.clone(),
-                    version: "nope".into(),
-                    payload: gcs.process_packet(r).unwrap()
-                };
-
-                stream.write_all(serde_json::to_string(&packet).unwrap().as_bytes()).unwrap();
-
-                drop(stream);
-            }
-        }
     };
 }
 
@@ -83,33 +45,69 @@ pub fn start_listener_loop(tcp_server: TcpListener)  {
 
 
 pub struct ConnectionHandler {
-    src_id: String,
     stream: TcpStream,
 }
 
-
 impl ConnectionHandler {
-    pub fn new(stream: TcpStream) -> Self {
-
-
-
-
-
+    pub fn new(stream: TcpStream) -> Self{
         Self {
-            src_id: "foo".into(),
             stream: stream
         }
     }
 
 
+    pub fn receive_packet(mut self) -> Option<TransportPacket> {
+        let data = self.read_line();
 
-    pub fn respond(packet: packets::Payload) {
-
+        match serde_json::from_str::<TransportPacket>(&data) {
+            Err(e) => {
+                error!("received malformed package: {}: {}", e, data);
+                None
+            },
+            Ok(r) => Some(r)
+        }
     }
 
 
-}
 
+
+    pub fn send_packet(&mut self, payload: packets::Payload) -> Option<()> {
+        debug!("parsed packet successfully");
+
+        warn!("Todo: devicemanager integration");
+
+
+        let packet = packets::TransportPacket {
+            src_fingerprint: "noot".into(),
+            dst_fingerprint: "foo".into(),
+            version: PROTOCOL_VERSION,
+            payload: payload
+        };
+
+        match self.stream.write_all(serde_json::to_string(&packet).unwrap().as_bytes()) {
+            Ok(_) => Some(()),
+            Err(e) => {
+                error!("Failes to write to stream: {}", e);
+                None
+            }
+        }
+    }
+
+
+    fn read_line(mut self) -> String {
+        let mut buf_stream = BufReader::new(self.stream);
+
+        // read the data
+        let mut data = String::new();
+        buf_stream.read_line(&mut data).unwrap();
+
+        debug!("read {:6} bytes", data.len());
+
+        // hand back the stream
+
+        data
+    }
+}
 
 
 
@@ -156,7 +154,7 @@ impl GCServer {
 
 
         Self {
-            dev_mngr: devicemanager::DeviceManager::new()
+            dev_mngr: devicemanager::DeviceManager::init()
         }
     }
 
@@ -170,19 +168,7 @@ impl GCServer {
 
         match packet.payload {
             packets::Payload::Pairing(r) => {
-                debug!("received Pairrequest from {}", packet.src_fingerprint);
-
-
-                Some(packets::Payload::Pairing(packets::Pairing {
-                    action: packets::PairingAction::Accepted,
-                    device: Some(packets::PairInfo {
-                        fingerprint: "packet.dst_fingerprint".into(),
-                        public_key: "foo".into(),
-                        os: "macOS".into(),
-                        model: "GNOME-shell-3.26".into(),
-                        hostname: get_hostname().unwrap()
-                    })
-                }))
+                None
             },
 
             _ => {

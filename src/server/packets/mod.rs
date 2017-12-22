@@ -26,8 +26,8 @@ use serde::de::DeserializeOwned;
 pub struct TransportPacket {
     pub dst_fingerprint: String,
     pub src_fingerprint: String,
-    pub version: String,
-    // #[serde(rename = "payload")]
+    pub version: i64,
+    #[serde(rename = "payload")]
     pub payload: Payload,
 }
 
@@ -36,7 +36,7 @@ pub struct TransportPacket {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "payload_type", content = "payload_data", rename_all = "snake_case")]
 pub enum Payload {
-    Pairing(Pairing),
+    Pairing(PairingStep),
     Encrypted(String),
 }
 
@@ -89,8 +89,33 @@ pub struct PairInfo {
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "step", content = "data", rename_all = "snake_case")]
+pub enum PairingStep {
+    #[serde(rename = "1")]
+    KeyRx(String),
+
+    #[serde(rename = "2")]
+    KeyTx(String),
+
+    #[serde(rename = "3")]
+    InformationRx(String),
+
+    #[serde(rename = "4")]
+    InformationTx(String),
+
+    KeyExchange_(String),
+    #[serde(rename = "1")]
+
+    KeyExchange__(String),
+}
+
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub struct Pairing {
-    pub action: PairingAction,
-    pub device: Option<PairInfo>
+pub struct PairingHello {
+    pub fingerprint: String,
+    pub public_key: String,
+    pub os: String,
+    pub model: String,
+    pub hostname: String
 }

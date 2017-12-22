@@ -10,8 +10,7 @@ extern crate hostname;
 
 
 use gtk::prelude::*;
-use gtk::Builder;
-use gtk::Window;
+use gtk::*;
 use gnomeconnect::events;
 use gnomeconnect::events::Report;
 use std::net::TcpListener;
@@ -20,6 +19,17 @@ use std::io::{Read, Write};
 use std::sync::mpsc;
 use std::thread;
 use gio::prelude::*;
+use std;
+
+
+
+
+const GENERAL_TAB_ID:      &str  = "list_tab_general";
+const POWER_TAB_ID:        &str  = "list_tab_power";
+const NOTIFICATION_TAB_ID: &str  = "list_tab_notifications";
+const FILES_TAB_ID:        &str  = "list_tab_files";
+const ACTION_LIST_ID:      &str  = "action_list";
+
 
 
 
@@ -32,6 +42,7 @@ pub fn gui() {
     }
 
 
+	println!("{}", GENERAL_TAB_ID);
 
     let builder = Builder::new_from_file("src/main.ui");
 
@@ -40,13 +51,40 @@ pub fn gui() {
 
 
 
+    let general_tab: ListBoxRow       = builder.get_object(GENERAL_TAB_ID).unwrap();
+    let power_tab: ListBoxRow         = builder.get_object(POWER_TAB_ID).unwrap();
+    let notifications_tab: ListBoxRow = builder.get_object(NOTIFICATION_TAB_ID).unwrap();
+    let files_tab: ListBoxRow         = builder.get_object(FILES_TAB_ID).unwrap();
+    let action_list: ListBox          = builder.get_object(ACTION_LIST_ID).unwrap();
+    let btn_test: Button              = builder.get_object("btn_test").unwrap();
+
+
+
+    btn_test.connect_button_press_event(|x, y| {
+        println!("{:#?}", x);
+        Inhibit(false)
+    });
+
+    general_tab.connect_activate(|x| {
+        println!("{:#?}", x);
+    });
+
+    power_tab.connect_activate(|x| {
+        println!("{:#?}", x);
+    });
+
+    notifications_tab.connect_activate(|x| {
+        println!("{:#?}", x);
+    });
+
+    files_tab.connect_activate(|x| {
+        println!("{:#?}", x);
+    });
+
+
+
+
     main_window.show_all();
-
-
-
-
-
-
     gtk::main();
 }
 

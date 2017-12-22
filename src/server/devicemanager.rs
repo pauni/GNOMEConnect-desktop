@@ -9,6 +9,15 @@ use std::collections::HashMap;
 use server::gcserver;
 use super::packets;
 use super::packets::request;
+use rsa;
+
+
+
+
+const KEY_LENGTH: u32 = 4096;
+
+
+
 
 
 
@@ -61,16 +70,40 @@ impl From<packets::request::PairRequest> for Device {
 
 pub struct DeviceManager {
     devices: HashMap<String, Device>,
+
+    private_key: String,
+    public_key: String,
 }
 
 
 
 impl DeviceManager {
-    pub fn new() -> Self {
+    pub fn init() -> Self {
+        debug!("generate private key");
+
+        let key = rsa::Rsa::generate(KEY_LENGTH);
+
+
+
+
+
+
+
+
+
+
         Self {
-            devices: HashMap::new()
+            devices: HashMap::new(),
+            private_key: "foo".into(),
+            public_key: "foo".into(),
         }
     }
+
+
+
+
+
+
 
 
     pub fn device_paired(&self, fingerprint: String) -> bool {
