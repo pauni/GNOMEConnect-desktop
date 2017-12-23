@@ -121,8 +121,6 @@ There are at the moment 2 txpes of payloads
 
 | Phone                        | Desktop                    |
 | :--------------------------- | -------------------------: |
-| Hello, i wanna pair with you |                            |
-|                              | Ok, lets share our keys    |
 | {public key}                 |                            |
 |                              | {public key}               |
 | E N C R Y P T E D _ N O W    | E N C R Y P T E D _ N O W  |

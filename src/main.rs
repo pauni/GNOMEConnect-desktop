@@ -38,68 +38,24 @@ pub const BUFFER_SIZE: usize = 65536;
 
 
 
-
 fn main() {
     pretty_env_logger::init().unwrap();
 
-    let pairing = Payload::Pairing( packets::PairingStep::KeyRx("foo".into()) );
+
+    ui::gui();
 
 
-    let packet = TransportPacket {
-        src_fingerprint: "foo".into(),
-        dst_fingerprint: "bar".into(),
-        version: 45,
-        payload: pairing
+    server::transponder::start();
+
+
+    let tcp_server = match TcpListener::bind(BIND_ADDR) {
+        Ok(s) => s,
+        Err(e) => panic!("can't bind to {}: {}", BIND_ADDR, e),
     };
 
 
-
-    let wire = serde_json::to_string_pretty(&packet).unwrap();
-
+    server::gcserver::start_listener_loop(tcp_server);
 
 
-
-
-
-    server::devicemanager::DeviceManager::init();
-
-
-
-
-
-
+    std::process::exit(0);
 }
-
-
-
-
-
-
-
-// fn main() {
-//     pretty_env_logger::init().unwrap();
-//
-//
-//     ui::gui();
-//
-//
-//     server::transponder::start();
-//
-//
-//     let tcp_server = match TcpListener::bind(BIND_ADDR) {
-//         Ok(s) => s,
-//         Err(e) => panic!("can't bind to {}: {}", BIND_ADDR, e),
-//     };
-//
-//
-//     server::gcserver::start_listener_loop(tcp_server);
-//
-//     // let gcserver = server::gcserver::GCServer::new(BIND_ADDR);
-//
-//
-//
-//
-//     std::process::exit(0);
-//
-//
-// }
