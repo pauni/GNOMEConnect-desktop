@@ -81,13 +81,7 @@ impl DeviceManager {
     pub fn init() -> Self {
         debug!("generate private key");
 
-        let key = rsa::Rsa::generate(KEY_LENGTH);
-
-
-
-
-
-
+        // let key = rsa::Rsa::generate(KEY_LENGTH);
 
 
 

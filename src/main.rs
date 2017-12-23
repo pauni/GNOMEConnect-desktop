@@ -42,7 +42,7 @@ fn main() {
     pretty_env_logger::init().unwrap();
 
 
-    ui::gui();
+    // ui::gui();
 
 
     server::transponder::start();
