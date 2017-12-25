@@ -39,7 +39,7 @@ impl TransportHeader {
 
 
 #[derive(Debug, Hash, Clone, Serialize, Deserialize)]
-#[serde(tag = "payload_type", content = "payload_data", rename_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
 pub enum Action {
 	Pairing,
 	Encrypted,

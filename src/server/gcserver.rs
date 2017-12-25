@@ -90,6 +90,9 @@ impl StreamHandler {
 		buf_stream.read_line(&mut data).unwrap();
 
 
+		debug!("{}", data);
+
+
 		debug!("read {} bytes from {}", data.len(), remote_addr);
 
 
