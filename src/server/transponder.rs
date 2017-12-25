@@ -55,7 +55,7 @@ pub fn start() -> Option<()> {
 
 #[derive(Clone, Debug, Serialize)]
 struct EchoSignal {
-	hostname: String,
+	device_name: String,
 	fingerprint: String,
 	os: String,
 }
