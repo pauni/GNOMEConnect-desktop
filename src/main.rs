@@ -13,24 +13,19 @@ extern crate log;
 extern crate pretty_env_logger;
 extern crate openssl;
 
-
-
 mod server;
 mod config;
 mod ui;
 mod rsa;
 
-
 use gnomeconnect::events;
-use std::net::TcpListener;
-use std::io;
+use server::devicemanager;
 use server::packets;
-use server::packets::Payload;
-use server::packets::TransportPacket;
-
+use server::packets::Action;
 
 pub const BIND_ADDR: &str = "0.0.0.0:4112";
 pub const BUFFER_SIZE: usize = 65536;
+pub const SERVER_QUEUE_CAPACITY: usize = 3;
 
 
 
@@ -39,23 +34,37 @@ pub const BUFFER_SIZE: usize = 65536;
 
 
 fn main() {
-    pretty_env_logger::init().unwrap();
+	pretty_env_logger::init().unwrap();
+
+	let device_manager = devicemanager::DeviceManager::new();
 
 
-    // ui::gui();
+	// ui::gui();
+
+	server::transponder::start();
 
 
-    server::transponder::start();
+	let server = server::gcserver::spawn_server(BIND_ADDR, SERVER_QUEUE_CAPACITY)
+		.expect("can't spwn server. Inspect previeous errors");
 
 
-    let tcp_server = match TcpListener::bind(BIND_ADDR) {
-        Ok(s) => s,
-        Err(e) => panic!("can't bind to {}: {}", BIND_ADDR, e),
-    };
+	for connection in server.into_iter() {
+		debug!("Received connection:");
+		debug!("    remote address: {}", connection.remote_ip());
+		debug!("    remote id     : {}", connection.remote_id());
+		debug!("    type          : {:?}", connection.action());
 
 
-    server::gcserver::start_listener_loop(tcp_server);
+
+		if !device_manager.is_paired(connection.remote_id()) {
+			error!("device is not paired");
+			error!("dropping connection");
+		}
+	}
 
 
-    std::process::exit(0);
+
+
+
+	std::process::exit(0);
 }

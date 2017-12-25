@@ -89,7 +89,6 @@
                     <property name="width_request">100</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <signal name="activate" handler="gtk_main_quit" swapped="no"/>
                     <child>
                       <object class="GtkLabel">
                         <property name="visible">True</property>

@@ -7,8 +7,8 @@ use std::sync::mpsc;
 use std::thread;
 use std::collections::HashMap;
 use server::gcserver;
-use super::packets;
-use super::packets::request;
+use server::packets;
+use server::packets::request;
 use rsa;
 
 
@@ -17,105 +17,107 @@ use rsa;
 const KEY_LENGTH: u32 = 4096;
 
 
-
-
-
-
-
-
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Device {
-    pub hostname: String,
-    pub os: String,
-    pub model: String,
-    pub public_key: String,
-    pub fingerprint: String,
+	pub hostname: String,
+	pub os: String,
+	pub model: String,
+	pub public_key: String,
+	pub fingerprint: String,
 }
 
 
 impl Device {
-    pub fn new(
-        hostname: String,
-        model: String,
-        os: String,
-        public_key: String,
-        fingerprint: String
-    ) -> Self {
-        Self {
-            hostname: hostname,
-            model: model,
-            os: os,
-            public_key: public_key,
-            fingerprint: fingerprint
-        }
-    }
+	pub fn new(
+		hostname: String,
+		model: String,
+		os: String,
+		public_key: String,
+		fingerprint: String
+	) -> Self {
+		Self {
+			hostname: hostname,
+			model: model,
+			os: os,
+			public_key: public_key,
+			fingerprint: fingerprint
+		}
+	}
 }
 
 
 
 
 impl From<packets::request::PairRequest> for Device {
-    fn from(pr: packets::request::PairRequest) -> Self {
-        Device::new(
-            pr.hostname,
-            pr.device,
-            pr.os,
-            pr.public_key,
-            pr.fingerprint
-        )
-    }
+	fn from(pr: packets::request::PairRequest) -> Self {
+		Device::new(
+			pr.hostname,
+			pr.device,
+			pr.os,
+			pr.public_key,
+			pr.fingerprint
+		)
+	}
 }
 
 
 pub struct DeviceManager {
-    devices: HashMap<String, Device>,
+	devices: HashMap<String, Device>,
 
-    private_key: String,
-    public_key: String,
+	private_key: String,
+	public_key: String,
 }
 
 
 
 impl DeviceManager {
-    pub fn init() -> Self {
-        debug!("generate private key");
-
-        // let key = rsa::Rsa::generate(KEY_LENGTH);
+	pub fn new() -> Self {
+		let device_map: HashMap<String, Device> = HashMap::new();
 
 
-
-
-        Self {
-            devices: HashMap::new(),
-            private_key: "foo".into(),
-            public_key: "foo".into(),
-        }
-    }
+		Self {
+			devices: device_map,
+			private_key: "noot".into(),
+			public_key: "noot".into()
+		}
+	}
 
 
 
 
 
 
-
-
-    pub fn device_paired(&self, fingerprint: String) -> bool {
-        self.devices.contains_key(&fingerprint)
-    }
-
-    pub fn pair_device(&mut self, pr: request::PairRequest) {
-        info!("pair device {}", pr.fingerprint);
-
-        self.devices.insert(
-            pr.clone().fingerprint,
-            Device::from(pr)
-        );
-    }
+	/// create a new devicemanager and a new fingerprint
+	pub fn init() -> Self {
+		unimplemented!()
+	}
 
 
 
-    pub fn get_device(&self, fingerprint: String) -> Option<&Device> {
-        self.devices.get(&fingerprint)
-    }
+
+
+
+
+
+	pub fn is_paired(&self, fingerprint: String) -> bool {
+		self.devices.contains_key(&fingerprint)
+	}
+
+
+	pub fn pair_device(&mut self, pr: request::PairRequest) {
+		unimplemented!();
+
+		info!("pair device {}", pr.fingerprint);
+
+		self.devices.insert(
+			pr.clone().fingerprint,
+			Device::from(pr)
+		);
+	}
+
+
+
+	pub fn get_device(&self, fingerprint: String) -> Option<&Device> {
+		self.devices.get(&fingerprint)
+	}
 }
