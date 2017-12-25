@@ -76,7 +76,7 @@ fn transponder_loop(udp_sock: UdpSocket) {
 
 
 		let echo = EchoSignal {
-			hostname: hostname::get_hostname().unwrap(),
+			device_name: hostname::get_hostname().unwrap(),
 			fingerprint: "todo".into(),
 			os: "debian".into()
 		};
