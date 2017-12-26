@@ -28,9 +28,22 @@ pub struct TransportHeader {
 
 
 
-impl TransportHeader {
 
+
+
+#[derive(Debug, Hash, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct ResponseHeader {
+	pub fingerprint: String,
+	pub version: Option<i64>,
+	#[serde(rename = "type")]
+	pub authorized: bool
 }
+
+
+
+
+
 
 
 

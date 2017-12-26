@@ -49,19 +49,25 @@ pub fn spawn_server(bind_addr: &'static str, queue_size: usize) -> Option<Receiv
 
 pub fn start_listener_loop(bind_addr: &'static str, gcserver_channel: SyncSender<StreamHandler>)  {
 
+
+	info!("start server at {}", bind_addr);
 	let tcp_server = match TcpListener::bind(bind_addr) {
 		Ok(s) => s,
-		Err(e) => panic!("can't bind to {}: {}", ::BIND_ADDR, e),
+		Err(e) => panic!("can't bind to {}: {}", bind_addr, e),
 	};
 
+
+	debug!("start listening loop");
 
 	for stream in tcp_server.incoming() {
 		debug!("TCPconnection established");
 
 		match stream {
-			Ok(r) => StreamHandler::new(r),
+			Ok(r) => gcserver_channel.send(StreamHandler::new(r).unwrap()),
 			Err(e) => panic!("can't accexpt stream: {}", e),
 		};
+
+		debug!("waiting for connection...");
 	};
 }
 
@@ -110,15 +116,11 @@ impl StreamHandler {
 
 
 
-
-
-
 		Some(Self {
 			stream: buf_stream.into_inner(),
 			remote_ip: remote_addr,
 			header: header,
 		})
-
 	}
 
 
@@ -129,7 +131,7 @@ impl StreamHandler {
 
 
 
-	fn read_line(self) -> String {
+	pub fn read_line(self) -> String {
 		let mut buf_stream = BufReader::new(self.stream);
 
 		// read the data
@@ -141,6 +143,11 @@ impl StreamHandler {
 		// hand back the stream
 
 		data
+	}
+
+
+	pub fn write_line(&mut self, data: String) {
+		self.stream.write_all(data.as_bytes());
 	}
 
 

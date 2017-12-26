@@ -33,68 +33,80 @@ const ACTION_LIST_ID:      &str  = "action_list";
 
 
 
+#[derive(Clone)]
+pub struct MainWindow {
+	main_window: Window,
+	builder: Builder,
+}
 
 
-pub fn gui() {
-	if gtk::init().is_err() {
-		println!("Failed to initialize GTK.");
-		return;
+
+
+
+
+
+
+
+
+
+
+
+
+impl MainWindow {
+
+	pub fn init() -> Self {
+		if gtk::init().is_err() {
+			panic!("Failed to initialize GTK.");
+		}
+
+
+		let builder = Builder::new_from_file("src/main.ui");
+
+
+		let main_window: Window = builder.get_object("MainWindow").unwrap();
+
+
+		let general_tab: ListBoxRow       = builder.get_object(GENERAL_TAB_ID).unwrap();
+		let power_tab: ListBoxRow         = builder.get_object(POWER_TAB_ID).unwrap();
+		let notifications_tab: ListBoxRow = builder.get_object(NOTIFICATION_TAB_ID).unwrap();
+		let files_tab: ListBoxRow         = builder.get_object(FILES_TAB_ID).unwrap();
+		let action_list: ListBox          = builder.get_object(ACTION_LIST_ID).unwrap();
+		let btn_test: Button              = builder.get_object("btn_test").unwrap();
+
+
+
+		general_tab.connect_activate(|x| {
+			println!("{:#?}", x);
+		});
+
+		power_tab.connect_activate(|x| {
+			println!("{:#?}", x);
+		});
+
+		notifications_tab.connect_activate(|x| {
+			println!("{:#?}", x);
+		});
+
+		files_tab.connect_activate(|x| {
+			println!("{:#?}", x);
+		});
+
+		main_window.show_all();
+
+		Self {
+			main_window: main_window,
+			builder: builder
+		}
 	}
 
 
-	println!("{}", GENERAL_TAB_ID);
 
-	let builder = Builder::new_from_file("src/main.ui");
-
-
-	let main_window: Window = builder.get_object("MainWindow").unwrap();
-
-
-
-	let general_tab: ListBoxRow       = builder.get_object(GENERAL_TAB_ID).unwrap();
-	let power_tab: ListBoxRow         = builder.get_object(POWER_TAB_ID).unwrap();
-	let notifications_tab: ListBoxRow = builder.get_object(NOTIFICATION_TAB_ID).unwrap();
-	let files_tab: ListBoxRow         = builder.get_object(FILES_TAB_ID).unwrap();
-	let action_list: ListBox          = builder.get_object(ACTION_LIST_ID).unwrap();
-	let btn_test: Button              = builder.get_object("btn_test").unwrap();
-
-
-
-	btn_test.connect_button_press_event(|x, y| {
-		println!("{:#?}", x);
-		Inhibit(false)
-	});
-
-	general_tab.connect_activate(|x| {
-		println!("{:#?}", x);
-	});
-
-	power_tab.connect_activate(|x| {
-		println!("{:#?}", x);
-	});
-
-	notifications_tab.connect_activate(|x| {
-		println!("{:#?}", x);
-	});
-
-	files_tab.connect_activate(|x| {
-		println!("{:#?}", x);
-	});
-
-
-
-
-	main_window.show_all();
-	gtk::main();
+	pub fn launch(&self) {
+		gtk::main();
+	}
 }
 
 
-
-
-
-fn config_new_remote_device(parent: &gtk::Window) {
-
-}
 
 
 
