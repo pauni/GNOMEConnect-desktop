@@ -44,6 +44,20 @@ pub struct ResponseHeader {
 
 
 
+#[derive(Debug, Hash, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct Pairing {
+	pub message: String,
+	pub signature: String,
+}
+
+
+
+
+
+
+
+
 
 
 

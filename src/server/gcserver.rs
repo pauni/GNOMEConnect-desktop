@@ -14,7 +14,6 @@ use std::net::TcpStream;
 use std::sync::mpsc::{self, SyncSender, Receiver};
 use std::thread;
 use std::net::SocketAddr;
-use std::ops::Drop;
 
 
 
@@ -209,7 +208,7 @@ impl GCServer {
 
 
 		Self {
-			dev_mngr: devicemanager::DeviceManager::init()
+			dev_mngr: devicemanager::DeviceManager::new()
 		}
 	}
 }

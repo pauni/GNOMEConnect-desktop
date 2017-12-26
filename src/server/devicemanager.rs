@@ -1,15 +1,21 @@
-use serde_json;
+use base64;
+use crypto::digest::Digest;
+use crypto::md5;
 use gnomeconnect::events;
 use gnomeconnect::events::Report;
-use std::net::TcpListener;
-use std::io::{Read, Write};
-use std::sync::mpsc;
-use std::thread;
-use std::collections::HashMap;
+use openssl::rsa::Rsa;
+use openssl::pkey;
+use openssl::sign;
+use rsa;
+use serde_json;
 use server::gcserver;
 use server::packets;
 use server::packets::request;
-use rsa;
+use std::collections::HashMap;
+use std::io::{Read, Write};
+use std::net::TcpListener;
+use std::sync::mpsc;
+use std::thread;
 
 
 
@@ -66,16 +72,25 @@ pub struct DeviceManager {
 
 	private_key: String,
 	public_key: String,
+	priv_pem: Vec<u8>,
+	pub_pem: Vec<u8>,
 }
 
 
 
 impl DeviceManager {
 	pub fn new() -> Self {
+		debug!("generate key");
+		let rsa_key = Rsa::generate(KEY_LENGTH).unwrap();
+		debug!("keys generated");
+
+
 		let device_map: HashMap<String, Device> = HashMap::new();
 
 
 		Self {
+			priv_pem: rsa_key.private_key_to_pem().unwrap(),
+			pub_pem: rsa_key.public_key_to_pem().unwrap(),
 			devices: device_map,
 			private_key: "noot".into(),
 			public_key: "noot".into()
@@ -84,17 +99,23 @@ impl DeviceManager {
 
 
 
-
-
-
-	/// create a new devicemanager and a new fingerprint
-	pub fn init() -> Self {
-		unimplemented!()
+	fn rsa(&self) -> Rsa {
+		Rsa::private_key_from_pem(&self.priv_pem).unwrap()
 	}
 
 
 
+	pub fn get_public_key(&self) -> String {
+		base64::encode(&self.pub_pem)
+	}
 
+
+	pub fn get_public_key_fingerprint(&self) -> String {
+		let mut hasher = md5::Md5::new();
+		hasher.input_str(&self.get_public_key());
+
+		hasher.result_str()
+	}
 
 
 
@@ -104,20 +125,23 @@ impl DeviceManager {
 	}
 
 
-	pub fn pair_device(&mut self, pr: request::PairRequest) {
-		unimplemented!();
-
-		info!("pair device {}", pr.fingerprint);
-
-		self.devices.insert(
-			pr.clone().fingerprint,
-			Device::from(pr)
-		);
-	}
-
-
 
 	pub fn get_device(&self, fingerprint: String) -> Option<&Device> {
 		self.devices.get(&fingerprint)
 	}
+
+
+
+
+	pub fn pair_device(&self, pairing: packets::Pairing) -> Option<()> {
+		// https://docs.rs/openssl/0.9.23/openssl/sign/index.html
+		//let keypair = pkey::PKey::from_rsa(self.rsa).unwrap();
+
+
+
+		None
+	}
+
+
+
 }
