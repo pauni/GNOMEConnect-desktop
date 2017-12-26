@@ -140,3 +140,11 @@ pub struct PairingHello {
 	pub model: String,
 	pub hostname: String
 }
+
+
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct PairingKeyExchange {
+	pub public_key: String,
+}

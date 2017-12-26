@@ -68,7 +68,7 @@ fn main() {
 		};
 
 
-
+		debug!("answer");
 		connection.write_line(to_json(&res).unwrap());
 
 
