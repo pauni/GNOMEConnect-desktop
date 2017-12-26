@@ -1,27 +1,9 @@
-extern crate gtk;
-extern crate gio;
-extern crate gnomeconnect;
-extern crate serde_json;
-extern crate notify_rust;
-
-
-use gtk::prelude::*;
-use gtk::{
-	ButtonsType,
-	DialogFlags,
-	MessageDialog,
-	MessageType,
-	Window,
-	WindowType,
-	ApplicationWindow,
-	HeaderBar,
-};
-
 use hostname;
 use std::net::UdpSocket;
 use std::thread;
-use gio::prelude::*;
-use serde_json::Value;
+use serde_json::to_string as to_json;
+use crypto::md5;
+use crypto::digest::Digest;
 
 
 
@@ -33,7 +15,7 @@ const BUFFER_SIZE: usize = 65536;
 
 
 
-pub fn start() -> Option<()> {
+pub fn start(public_key: String) -> Option<()> {
 	info!("start discovery service at {}", BIND_ADDR);
 
 	match UdpSocket::bind(BIND_ADDR) {
@@ -41,7 +23,7 @@ pub fn start() -> Option<()> {
 			thread::Builder::new()
 				.name("transponder".into())
 				.spawn(move || {
-					transponder_loop(socket)
+					transponder_loop(socket, public_key.clone())
 				});
 
 			Some(())
@@ -58,6 +40,8 @@ struct EchoSignal {
 	device_name: String,
 	fingerprint: String,
 	os: String,
+	public_key: String,
+	checksum: String,
 }
 
 
@@ -66,25 +50,32 @@ struct EchoSignal {
 
 
 
-fn transponder_loop(udp_sock: UdpSocket) {
-
+fn transponder_loop(udp_sock: UdpSocket, public_key: String) {
 	loop {
 		let mut buffer = [0; BUFFER_SIZE];
 		let (length, mut remote_addr) = udp_sock.recv_from(&mut buffer).unwrap();
 
-		debug!("received discovery from {}", remote_addr);
+
+		let mut hasher = md5::Md5::new();
+		hasher.input_str(&public_key);
+		let checksum = hasher.result_str();
+
+
+		// debug!("received discovery from {}", remote_addr);
 
 
 		let echo = EchoSignal {
 			device_name: hostname::get_hostname().unwrap(),
 			fingerprint: "todo".into(),
-			os: "debian".into()
+			os: "debian".into(),
+			public_key: public_key.clone(),
+			checksum: checksum,
 		};
 
 
 		remote_addr.set_port(4112);
 
-		let send = serde_json::to_string(&echo).unwrap();
+		let send = to_json(&echo).unwrap();
 		udp_sock.send_to(&send.clone().into_bytes(), remote_addr).unwrap();
 
 		debug!("responding {}", send);
