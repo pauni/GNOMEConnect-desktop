@@ -147,6 +147,7 @@ impl StreamHandler {
 
 
 	pub fn write_line(&mut self, data: String) {
+		debug!("write {} bytes", data.len());
 		self.stream.write_all((data + "\n").as_bytes());
 	}
 

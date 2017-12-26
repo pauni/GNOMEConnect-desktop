@@ -36,7 +36,6 @@ pub struct TransportHeader {
 pub struct ResponseHeader {
 	pub fingerprint: String,
 	pub version: Option<i64>,
-	#[serde(rename = "type")]
 	pub authorized: bool
 }
 
