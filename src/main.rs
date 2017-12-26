@@ -69,6 +69,7 @@ fn main() {
 
 
 		debug!("answer");
+		debug!("    {}", to_json(&res).unwrap());
 		connection.write_line(to_json(&res).unwrap());
 
 
