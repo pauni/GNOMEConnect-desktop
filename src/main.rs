@@ -41,6 +41,10 @@ fn main() {
 
 	let device_manager = devicemanager::DeviceManager::new();
 
+	let public_key = device_manager.get_public_key();
+
+	println!("{}", public_key);
+
 	server::transponder::start(device_manager.get_public_key());
 
 	// let gui = ui::MainWindow::init();

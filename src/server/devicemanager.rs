@@ -3,10 +3,13 @@ use crypto::digest::Digest;
 use crypto::md5;
 use gnomeconnect::events;
 use gnomeconnect::events::Report;
-use openssl::rsa::Rsa;
+use openssl::hash::MessageDigest;
 use openssl::pkey;
+use openssl::pkey::PKey;
+use openssl::rsa;
 use openssl::sign;
-use rsa;
+use openssl::sign::Signer;
+use openssl::sign::Verifier;
 use serde_json;
 use server::gcserver;
 use server::packets;
@@ -81,7 +84,7 @@ pub struct DeviceManager {
 impl DeviceManager {
 	pub fn new() -> Self {
 		debug!("generate key");
-		let rsa_key = Rsa::generate(KEY_LENGTH).unwrap();
+		let rsa_key = rsa::Rsa::generate(KEY_LENGTH).unwrap();
 		debug!("keys generated");
 
 
@@ -99,14 +102,14 @@ impl DeviceManager {
 
 
 
-	fn rsa(&self) -> Rsa {
-		Rsa::private_key_from_pem(&self.priv_pem).unwrap()
+	fn rsa(&self) -> rsa::Rsa {
+		rsa::Rsa::private_key_from_pem(&self.priv_pem).unwrap()
 	}
 
 
 
 	pub fn get_public_key(&self) -> String {
-		base64::encode(&self.pub_pem)
+		String::from_utf8(self.pub_pem.clone()).unwrap()
 	}
 
 
@@ -135,7 +138,19 @@ impl DeviceManager {
 
 	pub fn pair_device(&self, pairing: packets::Pairing) -> Option<()> {
 		// https://docs.rs/openssl/0.9.23/openssl/sign/index.html
-		//let keypair = pkey::PKey::from_rsa(self.rsa).unwrap();
+
+		let rsa = rsa::Rsa::private_key_from_pem(&self.priv_pem).unwrap();
+		let keypair = pkey::PKey::from_rsa(rsa).unwrap();
+
+
+		let signature = base64::decode(&pairing.signature).unwrap();
+		let message = pairing.message;
+
+		let mut verifier = Verifier::new(MessageDigest::sha256(), &keypair).unwrap();
+		verifier.update(&message.as_bytes());
+
+
+		verifier.verify(&signature);
 
 
 
