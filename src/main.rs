@@ -1,30 +1,30 @@
-extern crate gtk;
+#[macro_use]extern crate log;
+#[macro_use]extern crate serde_derive;
+#[macro_use]extern crate serde_json;
+extern crate base64;
+extern crate env_logger;
 extern crate gio;
 extern crate gnomeconnect;
-#[macro_use]
-extern crate serde_json;
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate notify_rust;
+extern crate gtk;
 extern crate hostname;
-#[macro_use]
-extern crate log;
-extern crate pretty_env_logger;
-extern crate env_logger;
+extern crate notify_rust;
+extern crate openssl_sys;
 extern crate openssl;
+extern crate pretty_env_logger;
+extern crate crypto;
+extern crate serde;
 
-mod server;
 mod config;
-mod ui;
 mod rsa;
+mod server;
+mod ui;
 
 use gnomeconnect::events;
+use serde_json::to_string as to_json;
 use server::devicemanager;
+use server::gcserver::StreamHandler;
 use server::packets;
 use server::packets::Action;
-use server::gcserver::StreamHandler;
-use serde_json::to_string as to_json;
 
 pub const BIND_ADDR: &str = "0.0.0.0:4112";
 pub const BUFFER_SIZE: usize = 65536;
@@ -41,7 +41,7 @@ fn main() {
 
 	let device_manager = devicemanager::DeviceManager::new();
 
-	server::transponder::start();
+	server::transponder::start(device_manager.get_public_key());
 
 	// let gui = ui::MainWindow::init();
 	// gui.launch();
