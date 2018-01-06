@@ -40,6 +40,7 @@ struct EchoSignal {
 	device_name: String,
 	fingerprint: String,
 	os: String,
+	protocol_version: Option<u64>,
 	public_key: String,
 	checksum: String,
 }
@@ -61,6 +62,7 @@ fn transponder_loop(udp_sock: UdpSocket, public_key: String) {
 		let checksum = hasher.result_str();
 
 
+
 		// debug!("received discovery from {}", remote_addr);
 
 
@@ -68,6 +70,7 @@ fn transponder_loop(udp_sock: UdpSocket, public_key: String) {
 			device_name: hostname::get_hostname().unwrap(),
 			fingerprint: "todo".into(),
 			os: "debian".into(),
+			protocol_version: None,
 			public_key: public_key.clone(),
 			checksum: checksum,
 		};

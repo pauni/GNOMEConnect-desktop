@@ -51,6 +51,8 @@ fn main() {
 	// gui.launch();
 
 
+	server::transponder::
+
 
 
 	let server = server::gcserver::spawn_server(BIND_ADDR, SERVER_QUEUE_CAPACITY)
