@@ -13,6 +13,7 @@ extern crate openssl;
 extern crate pretty_env_logger;
 extern crate crypto;
 extern crate serde;
+extern crate clap;
 
 mod config;
 mod rsa;
@@ -25,6 +26,9 @@ use server::devicemanager;
 use server::gcserver::StreamHandler;
 use server::packets;
 use server::packets::Action;
+use clap::App;
+use clap::Arg;
+use clap::SubCommand;
 
 pub const BIND_ADDR: &str = "0.0.0.0:4112";
 pub const BUFFER_SIZE: usize = 65536;
@@ -39,20 +43,52 @@ pub const SERVER_QUEUE_CAPACITY: usize = 3;
 fn main() {
 	pretty_env_logger::init().unwrap();
 
-	let device_manager = devicemanager::DeviceManager::new();
 
+	let matches = App::new("My Super Program")
+		.arg(Arg::with_name("gui")
+			.long("gui")
+			.help("Start the GUI for GNOMEConnect. THIS IS BLOCKING")
+			.takes_value(false))
+		.arg(Arg::with_name("transponder")
+			.long("transponder")
+			.help("Start the UDP transponder")
+			.takes_value(false))
+
+		.get_matches();
+
+
+	println!("{:#?}", matches);
+
+
+
+
+	let device_manager = devicemanager::DeviceManager::new();
 	let public_key = device_manager.get_public_key();
+
 
 	println!("{}", public_key);
 
-	server::transponder::start(device_manager.get_public_key());
+	if matches.is_present("transponder") {
+		server::transponder::start(device_manager.get_public_key());
+	}
+
+
+	if matches.is_present("gui") {
+		ui::MainWindow::init().launch();
+	}
+
+
+
+
+
+
+
+
+
+
 
 	// let gui = ui::MainWindow::init();
 	// gui.launch();
-
-
-	server::transponder::
-
 
 
 	let server = server::gcserver::spawn_server(BIND_ADDR, SERVER_QUEUE_CAPACITY)

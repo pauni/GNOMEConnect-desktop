@@ -48,7 +48,6 @@ pub fn spawn_server(bind_addr: &'static str, queue_size: usize) -> Option<Receiv
 
 pub fn start_listener_loop(bind_addr: &'static str, gcserver_channel: SyncSender<StreamHandler>)  {
 
-
 	info!("start server at {}", bind_addr);
 	let tcp_server = match TcpListener::bind(bind_addr) {
 		Ok(s) => s,

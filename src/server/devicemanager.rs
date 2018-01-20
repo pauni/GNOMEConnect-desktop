@@ -101,11 +101,9 @@ impl DeviceManager {
 	}
 
 
-
 	fn rsa(&self) -> rsa::Rsa {
 		rsa::Rsa::private_key_from_pem(&self.priv_pem).unwrap()
 	}
-
 
 
 	pub fn get_public_key(&self) -> String {
