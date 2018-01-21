@@ -1,29 +1,23 @@
 use base64;
 use crypto::digest::Digest;
 use crypto::md5;
-use gnomeconnect::events;
-use gnomeconnect::events::Report;
 use openssl::hash::MessageDigest;
 use openssl::pkey;
-use openssl::pkey::PKey;
 use openssl::rsa;
-use openssl::sign;
-use openssl::sign::Signer;
 use openssl::sign::Verifier;
 use serde_json;
-use server::gcserver;
 use server::packets;
-use server::packets::request;
 use std::collections::HashMap;
 use std::io::{Read, Write};
-use std::net::TcpListener;
-use std::sync::mpsc;
-use std::thread;
+use std::fs;
+use std::path;
 
 
 
 
 const KEY_LENGTH: u32 = 4096;
+const DEVICE_SAVE_FILE: &str = "./devices.json";
+
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -38,11 +32,11 @@ pub struct Device {
 
 impl Device {
 	pub fn new(
+		fingerprint: String,
 		hostname: String,
 		model: String,
 		os: String,
 		public_key: String,
-		fingerprint: String
 	) -> Self {
 		Self {
 			hostname: hostname,
@@ -70,19 +64,42 @@ impl From<packets::request::PairRequest> for Device {
 }
 
 
-pub struct DeviceManager {
-	devices: HashMap<String, Device>,
 
-	private_key: String,
-	public_key: String,
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DeviceManager {
 	priv_pem: Vec<u8>,
 	pub_pem: Vec<u8>,
+	devices: HashMap<String, Device>,
 }
 
 
 
 impl DeviceManager {
+	pub fn load_from_default() -> Self {
+		info!("loading keys and devices from disk");
+		let fd = fs::File::open(DEVICE_SAVE_FILE).unwrap();
+
+		let dm: Self = serde_json::from_reader(fd)
+			.expect("failed to read saved devices from disk");
+
+
+		dm
+	}
+
+
+
+
 	pub fn new() -> Self {
+		match path::Path::new(DEVICE_SAVE_FILE).exists() {
+			true => Self::load_from_default(),
+			false => Self::init()
+		}
+	}
+
+
+	// priv_pem: Vec<u8>, pub_pem: Vec<u8>, devices: HashMap<String, Device>
+	pub fn init() -> Self {
+		info!("initialize new keys");
 		debug!("generate key");
 		let rsa_key = rsa::Rsa::generate(KEY_LENGTH).unwrap();
 		debug!("keys generated");
@@ -91,13 +108,15 @@ impl DeviceManager {
 		let device_map: HashMap<String, Device> = HashMap::new();
 
 
-		Self {
+		let dm = Self {
 			priv_pem: rsa_key.private_key_to_pem().unwrap(),
 			pub_pem: rsa_key.public_key_to_pem().unwrap(),
 			devices: device_map,
-			private_key: "noot".into(),
-			public_key: "noot".into()
-		}
+		};
+
+		dm.save_state();
+
+		dm
 	}
 
 
@@ -157,4 +176,59 @@ impl DeviceManager {
 
 
 
+
+	pub fn add_device(&mut self, device: Device) {
+		self.devices.insert(device.fingerprint.clone(), device);
+		self.save_state();
+	}
+
+
+	pub fn remove_by_device(&mut self, device: Device) -> Option<()>{
+		let res = self.devices
+			.remove(&device.fingerprint)
+			.map(|_| Some(()))
+			.unwrap();
+
+
+		self.save_state();
+
+		res
+	}
+
+	pub fn remove_by_fingerprint(&mut self, fingerprint: String) -> Option<()>{
+		let res = self.devices
+			.remove(&fingerprint)
+			.map(|_| Some(()))
+			.unwrap();
+
+
+		self.save_state();
+
+		res
+	}
+
+
+	pub fn remove_by_hostname(&mut self, name: String) -> Option<()> {
+		for (fp, device) in self.devices.clone() {
+			if device.hostname == name {
+				return self.remove_by_fingerprint(fp)
+			}
+		}
+
+
+
+		self.save_state();
+
+		None
+	}
+
+
+
+	pub fn save_state(&self) {
+		debug!("{:#?}", self);
+
+		let fd = fs::File::create(DEVICE_SAVE_FILE).unwrap();
+
+		serde_json::to_writer_pretty(fd, &self).expect("failed to save devices to disk");
+	}
 }

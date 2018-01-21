@@ -49,6 +49,21 @@ pub struct ResponseHeader {
 pub struct Pairing {
 	pub message: String,
 	pub signature: String,
+	pub public_key: String,
+	pub fingerprint: String,
+}
+
+
+
+impl Pairing {
+	pub fn gen_example() -> Self {
+		Self {
+			message: "<encrypted message>".to_string(),
+			signature: "<DSA-signature>".to_string(),
+			public_key: "<public key>".to_string(),
+			fingerprint: "<fingerprint>".to_string()
+		}
+	}
 }
 
 
@@ -75,7 +90,7 @@ pub enum Action {
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Device {
+pub struct GeneralDeviceInformation {
 	pub device: String,
 	pub os: String,
 	pub public_key: String,
@@ -84,7 +99,7 @@ pub struct Device {
 
 
 
-impl Device {
+impl GeneralDeviceInformation {
 	pub fn new_for_me() -> Self {
 		Self {
 			device: "foo".into(),

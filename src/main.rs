@@ -29,6 +29,7 @@ use server::packets::Action;
 use clap::App;
 use clap::Arg;
 use clap::SubCommand;
+use serde::Serialize;
 
 pub const BIND_ADDR: &str = "0.0.0.0:4112";
 pub const BUFFER_SIZE: usize = 65536;
@@ -36,6 +37,9 @@ pub const SERVER_QUEUE_CAPACITY: usize = 3;
 
 
 
+
+// CLI-constants
+const CLI_GEN_PACKETS: &str = "genpackets";
 
 
 
@@ -48,16 +52,73 @@ fn main() {
 		.arg(Arg::with_name("gui")
 			.long("gui")
 			.help("Start the GUI for GNOMEConnect. THIS IS BLOCKING")
-			.takes_value(false))
-		.arg(Arg::with_name("transponder")
-			.long("transponder")
-			.help("Start the UDP transponder")
-			.takes_value(false))
-
+			.takes_value(false)
+		)
+		.arg(Arg::with_name("no-transponder")
+			.long("no-transponder")
+			.help("Disable the UDP transponder")
+			.takes_value(false)
+		)
+		.subcommand(App::new(CLI_GEN_PACKETS)
+			.help("Generate Package for debugging")
+			.arg(Arg::with_name("pairing")
+				.long("pairing")
+				.help("generate pairing packet")
+				.takes_value(false)
+			)
+		)
+		.subcommand(App::new("debug")
+			.subcommand(App::new("add-device"))
+			.subcommand(App::new("remove-device")
+				.arg(Arg::with_name("name")
+					.long("name")
+					.help("remove a device")
+					.takes_value(true)
+					.required(true)
+				)
+			)
+		)
 		.get_matches();
 
 
-	println!("{:#?}", matches);
+
+
+	if let Some(sub_m) = matches.subcommand_matches(CLI_GEN_PACKETS) {
+		println!("generate packets");
+		generate_packages(sub_m.clone());
+		std::process::exit(0);
+	}
+
+	if let Some(sub_m) = matches.subcommand_matches("debug") {
+		match sub_m.subcommand() {
+			("add-device", Some(_)) => {
+				devicemanager::DeviceManager::new()
+					.add_device(devicemanager::Device::new(
+						"debug-fingerprint".to_string(),
+						"debug-hostname".to_string(),
+						"debug-device".to_string(),
+						"debug-Os".to_string(),
+						"debug-fingerprint".to_string(),
+					)
+				);
+			},
+			("remove-device", Some(args)) => {
+				let dev_name = args.value_of("name").unwrap();
+				println!("removing device {}", dev_name);
+
+				let mut dm = devicemanager::DeviceManager::new();
+				
+				match dm.remove_by_hostname(dev_name.to_string()) {
+					None => println!("device not there"),
+					Some(_) => println!("device removed"),
+				}
+			},
+			(_, _) => error!("command not found"),
+		}
+
+
+		std::process::exit(0);
+	}
 
 
 
@@ -68,7 +129,7 @@ fn main() {
 
 	println!("{}", public_key);
 
-	if matches.is_present("transponder") {
+	if !matches.is_present("transponder") {
 		server::transponder::start(device_manager.get_public_key());
 	}
 
@@ -76,6 +137,7 @@ fn main() {
 	if matches.is_present("gui") {
 		ui::MainWindow::init().launch();
 	}
+
 
 
 
@@ -99,32 +161,14 @@ fn main() {
 		info!("connection received");
 		debug!("Connection parameters: {}", connection.remote_ip());
 		debug!("    remote address: {}", connection.remote_ip());
-		debug!("    remote id     : {}", connection.remote_id());
-		debug!("    type          : {:?}", connection.action());
-
-
-		let res = packets::ResponseHeader {
-			fingerprint: "foo".into(),
-			version: Some(1),
-			authorized: device_manager.is_paired(connection.remote_id())
-		};
-
-
-		debug!("answer");
-		debug!("    {}", to_json(&res).unwrap());
-		connection.write_line(to_json(&res).unwrap());
 
 
 
 
-		match connection.action() {
-			Action::Pairing => pairing(connection),
-			Action::Encrypted => warn!("encrypted"),
-		};
 
 
+		// println!("{:#?}", connection);
 
-		std::process::exit(0);
 	}
 
 
@@ -135,11 +179,35 @@ fn main() {
 }
 
 
-fn pairing(sh: StreamHandler) {
-	let data = sh.read_line();
 
 
-	debug!("{}", data);
 
+
+
+
+
+
+
+
+
+
+fn generate_packages(matches: clap::ArgMatches) {
+	if matches.is_present("pairing") {
+		let example = server::gcserver::Package {
+			what: server::gcserver::Type::PairRequest(packets::Pairing::gen_example())
+		};
+
+		print_packet(example);
+	}
+
+
+
+
+
+	fn print_packet<T: Serialize>(packet: T) {
+		let string = serde_json::to_string_pretty(&packet).unwrap();
+
+		println!("{}", string);
+	}
 
 }

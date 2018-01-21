@@ -1,13 +1,7 @@
-use gnomeconnect::events;
-use gnomeconnect::events::Report;
-use hostname::get_hostname;
-use packets::TransportHeader;
 use serde_json;
 use server::devicemanager;
 use server::packets;
-use server::packets::request;
-use server::packets::response;
-use std;
+
 use std::io::{Read, Write, BufRead, BufReader,BufWriter};
 use std::net::TcpListener;
 use std::net::TcpStream;
@@ -46,8 +40,7 @@ pub fn spawn_server(bind_addr: &'static str, queue_size: usize) -> Option<Receiv
 
 
 
-pub fn start_listener_loop(bind_addr: &'static str, gcserver_channel: SyncSender<StreamHandler>)  {
-
+pub fn start_listener_loop(bind_addr: &'static str, gcserver_channel: SyncSender<StreamHandler>) {
 	info!("start server at {}", bind_addr);
 	let tcp_server = match TcpListener::bind(bind_addr) {
 		Ok(s) => s,
@@ -71,11 +64,33 @@ pub fn start_listener_loop(bind_addr: &'static str, gcserver_channel: SyncSender
 
 
 
+
+
+
+
+
+#[derive(Debug, Hash, Clone, Serialize, Deserialize)]
+pub enum Type {
+	PairRequest(packets::Pairing),
+	EncryptedData(String),
+}
+
+
+
+
+
+#[derive(Debug, Hash, Clone, Serialize, Deserialize)]
+pub struct Package {
+	fingerprint: String,
+	pub what: Type
+}
+
+
+
 /// Handle for the raw Stream
 pub struct StreamHandler {
 	stream: TcpStream,
 	remote_ip: SocketAddr,
-	header: TransportHeader,
 }
 
 
@@ -85,8 +100,6 @@ impl StreamHandler {
 		warn!("Todo: devicemanager integration");
 
 		let remote_addr = stream.peer_addr().unwrap();
-
-
 		let mut buf_stream = BufReader::new(stream);
 
 		// read the data
@@ -95,12 +108,11 @@ impl StreamHandler {
 
 
 		debug!("{}", data);
-
-
 		debug!("read {} bytes from {}", data.len(), remote_addr);
 
 
-		let header: TransportHeader = match serde_json::from_str(&data) {
+
+		let package: Package = match serde_json::from_str(&data) {
 			Ok(r) => {
 				debug!("parsed packet successfully");
 				r
@@ -112,14 +124,35 @@ impl StreamHandler {
 		};
 
 
+		let dm = devicemanager::DeviceManager::new();
+
+		match package.what {
+			Type::PairRequest(request) => {
+				// handle the pairrequest here
+
+				println!("{:#?}", request);
+			},
+
+			Type::EncryptedData(data) => {
+				// decrypt data using the provided keys
+
+				if !dm.is_paired(package.fingerprint) {
+					buf_stream.into_inner().write_all();
+				}
+
+
+
+			}
+
+		}
 
 
 		Some(Self {
 			stream: buf_stream.into_inner(),
 			remote_ip: remote_addr,
-			header: header,
 		})
 	}
+
 
 
 
@@ -144,23 +177,9 @@ impl StreamHandler {
 	}
 
 
-	pub fn write_line(&mut self, data: String) {
-		debug!("write {} bytes", data.len());
-		self.stream.write_all((data + "\n").as_bytes());
-	}
-
-
-
-	pub fn action(&self) -> packets::Action {
-		self.header.type_.clone()
-	}
 
 	pub fn remote_ip(&self) -> SocketAddr {
 		self.remote_ip
-	}
-
-	pub fn remote_id(&self) -> String {
-		self.header.fingerprint.clone()
 	}
 }
 
