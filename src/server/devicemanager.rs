@@ -4,6 +4,7 @@ use crypto::md5;
 use openssl::hash::MessageDigest;
 use openssl::pkey;
 use openssl::rsa;
+use openssl::rsa::Rsa;
 use openssl::sign::Verifier;
 use serde_json;
 use server::packets;
@@ -25,8 +26,9 @@ pub struct Device {
 	pub hostname: String,
 	pub os: String,
 	pub model: String,
-	pub public_key: String,
 	pub fingerprint: String,
+	pub public_key: Vec<u8>,
+	pub shared_secret: Vec<u8>,
 }
 
 
@@ -36,32 +38,28 @@ impl Device {
 		hostname: String,
 		model: String,
 		os: String,
-		public_key: String,
+		public_key: Vec<u8>,
+		shared_secret: Vec<u8>,
 	) -> Self {
 		Self {
 			hostname: hostname,
 			model: model,
 			os: os,
 			public_key: public_key,
-			fingerprint: fingerprint
+			fingerprint: fingerprint,
+			shared_secret: shared_secret,
 		}
 	}
-}
 
 
-
-
-impl From<packets::request::PairRequest> for Device {
-	fn from(pr: packets::request::PairRequest) -> Self {
-		Device::new(
-			pr.hostname,
-			pr.device,
-			pr.os,
-			pr.public_key,
-			pr.fingerprint
-		)
+	fn rsa_key(&self) -> Rsa {
+		Rsa::public_key_from_pem(&self.public_key).unwrap()
 	}
 }
+
+
+
+
 
 
 
@@ -81,7 +79,6 @@ impl DeviceManager {
 
 		let dm: Self = serde_json::from_reader(fd)
 			.expect("failed to read saved devices from disk");
-
 
 		dm
 	}
@@ -153,6 +150,7 @@ impl DeviceManager {
 
 
 
+
 	pub fn pair_device(&self, pairing: packets::Pairing) -> Option<()> {
 		// https://docs.rs/openssl/0.9.23/openssl/sign/index.html
 
@@ -172,6 +170,11 @@ impl DeviceManager {
 
 
 		None
+	}
+
+
+	fn get_rsa(&self) -> Rsa {
+		Rsa::private_key_to_pem(self.priv_pem)
 	}
 
 
@@ -230,5 +233,23 @@ impl DeviceManager {
 		let fd = fs::File::create(DEVICE_SAVE_FILE).unwrap();
 
 		serde_json::to_writer_pretty(fd, &self).expect("failed to save devices to disk");
+	}
+
+
+
+
+	pub fn decrypt_asym(&self, data: Vec<u8>) -> Option<Vec<u8>> {
+		let mykey = self.get_rsa();
+
+
+		let mut decrypted;
+
+
+		let result = mykey.private_decrypt(&data, decrypted, rsa::Padding::from_raw(0));
+
+		match result {
+			Err(_) => None,
+			Ok(s) => Some(decrypted.to_vec())
+		}
 	}
 }
