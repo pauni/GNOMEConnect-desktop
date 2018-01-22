@@ -19,10 +19,10 @@ use serde::de::DeserializeOwned;
 #[derive(Debug, Hash, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct TransportHeader {
-	pub fingerprint: String,
-	pub version: Option<i64>,
-	#[serde(rename = "type")]
-	pub type_: Action,
+    pub fingerprint: String,
+    pub version: Option<i64>,
+    #[serde(rename = "type")]
+    pub type_: Action,
 }
 
 
@@ -34,9 +34,9 @@ pub struct TransportHeader {
 #[derive(Debug, Hash, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct ResponseHeader {
-	pub fingerprint: String,
-	pub version: Option<i64>,
-	pub authorized: bool
+    pub fingerprint: String,
+    pub version: Option<i64>,
+    pub authorized: bool,
 }
 
 
@@ -47,23 +47,23 @@ pub struct ResponseHeader {
 #[derive(Debug, Hash, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct Pairing {
-	pub message: String,
-	pub signature: String,
-	pub public_key: String,
-	pub fingerprint: String,
+    pub message: String,
+    pub signature: String,
+    pub public_key: String,
+    pub fingerprint: String,
 }
 
 
 
 impl Pairing {
-	pub fn gen_example() -> Self {
-		Self {
-			message: "<encrypted message>".to_string(),
-			signature: "<DSA-signature>".to_string(),
-			public_key: "<public key>".to_string(),
-			fingerprint: "<fingerprint>".to_string()
-		}
-	}
+    pub fn gen_example() -> Self {
+        Self {
+            message: "<encrypted message>".to_string(),
+            signature: "<DSA-signature>".to_string(),
+            public_key: "<public key>".to_string(),
+            fingerprint: "<fingerprint>".to_string(),
+        }
+    }
 }
 
 
@@ -82,8 +82,8 @@ impl Pairing {
 #[derive(Debug, Hash, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Action {
-	Pairing,
-	Encrypted,
+    Pairing,
+    Encrypted,
 }
 
 
@@ -91,23 +91,23 @@ pub enum Action {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GeneralDeviceInformation {
-	pub device: String,
-	pub os: String,
-	pub public_key: String,
-	pub fingerprint: String,
+    pub device: String,
+    pub os: String,
+    pub public_key: String,
+    pub fingerprint: String,
 }
 
 
 
 impl GeneralDeviceInformation {
-	pub fn new_for_me() -> Self {
-		Self {
-			device: "foo".into(),
-			os: "debian".into(),
-			public_key: "no boi".into(),
-			fingerprint: "noot".into(),
-		}
-	}
+    pub fn new_for_me() -> Self {
+        Self {
+            device: "foo".into(),
+            os: "debian".into(),
+            public_key: "no boi".into(),
+            fingerprint: "noot".into(),
+        }
+    }
 }
 
 
@@ -116,9 +116,9 @@ impl GeneralDeviceInformation {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum PairingAction {
-	Request,
-	Denied,
-	Accepted
+    Request,
+    Denied,
+    Accepted,
 }
 
 
@@ -126,11 +126,11 @@ pub enum PairingAction {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct PairInfo {
-	pub fingerprint: String,
-	pub public_key: String,
-	pub os: String,
-	pub model: String,
-	pub hostname: String
+    pub fingerprint: String,
+    pub public_key: String,
+    pub os: String,
+    pub model: String,
+    pub hostname: String,
 }
 
 
@@ -138,23 +138,23 @@ pub struct PairInfo {
 #[derive(Debug, Hash, Clone, Serialize, Deserialize)]
 #[serde(tag = "step", content = "data", rename_all = "snake_case")]
 pub enum PairingStep {
-	#[serde(rename = "1")]
-	KeyRx(String),
+    #[serde(rename = "1")]
+    KeyRx(String),
 
-	#[serde(rename = "2")]
-	KeyTx(String),
+    #[serde(rename = "2")]
+    KeyTx(String),
 
-	#[serde(rename = "3")]
-	InformationRx(String),
+    #[serde(rename = "3")]
+    InformationRx(String),
 
-	#[serde(rename = "4")]
-	InformationTx(String),
+    #[serde(rename = "4")]
+    InformationTx(String),
 
-	#[serde(rename = "1")]
-	KeyExchange_(String),
+    #[serde(rename = "1")]
+    KeyExchange_(String),
 
-	#[serde(rename = "1")]
-	KeyExchange__(String),
+    #[serde(rename = "1")]
+    KeyExchange__(String),
 }
 
 
@@ -162,11 +162,11 @@ pub enum PairingStep {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct PairingHello {
-	pub fingerprint: String,
-	pub public_key: String,
-	pub os: String,
-	pub model: String,
-	pub hostname: String
+    pub fingerprint: String,
+    pub public_key: String,
+    pub os: String,
+    pub model: String,
+    pub hostname: String,
 }
 
 
@@ -174,5 +174,5 @@ pub struct PairingHello {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct PairingKeyExchange {
-	pub public_key: String,
+    pub public_key: String,
 }
