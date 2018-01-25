@@ -23,16 +23,15 @@ mod rsa;
 mod server;
 mod ui;
 
-use gnomeconnect::events;
+use clap::App;
+use clap::Arg;
+use clap::SubCommand;
+use serde::Serialize;
 use serde_json::to_string as to_json;
 use server::devicemanager;
 use server::gcserver::StreamHandler;
 use server::packets;
 use server::packets::Action;
-use clap::App;
-use clap::Arg;
-use clap::SubCommand;
-use serde::Serialize;
 
 pub const BIND_ADDR: &str = "0.0.0.0:4112";
 pub const BUFFER_SIZE: usize = 65536;
@@ -47,127 +46,175 @@ const CLI_GEN_PACKETS: &str = "genpackets";
 
 
 
-fn main() {
-    pretty_env_logger::init().unwrap();
+fn main()
+{
+	pretty_env_logger::init().unwrap();
 
 
-    let matches = App::new("My Super Program")
-        .arg(Arg::with_name("gui")
-                 .long("gui")
-                 .help("Start the GUI for GNOMEConnect. THIS IS BLOCKING")
-                 .takes_value(false))
-        .arg(Arg::with_name("no-transponder")
-                 .long("no-transponder")
-                 .help("Disable the UDP transponder")
-                 .takes_value(false))
-        .subcommand(App::new(CLI_GEN_PACKETS)
-                        .help("Generate Package for debugging")
-                        .arg(Arg::with_name("pairing")
-                                 .long("pairing")
-                                 .help("generate pairing packet")
-                                 .takes_value(false)))
-        .subcommand(App::new("debug")
-                        .subcommand(App::new("add-device"))
-                        .subcommand(App::new("remove-device").arg(Arg::with_name("name")
-                                                                      .long("name")
-                                                                      .help("remove a device",)
-                                                                      .takes_value(true)
-                                                                      .required(true))))
-        .get_matches();
-
-
-
-
-    if let Some(sub_m) = matches.subcommand_matches(CLI_GEN_PACKETS) {
-        println!("generate packets");
-        generate_packages(sub_m.clone());
-        std::process::exit(0);
-    }
-
-    if let Some(sub_m) = matches.subcommand_matches("debug") {
-        match sub_m.subcommand() {
-            ("add-device", Some(_)) => {
-                devicemanager::DeviceManager::new()
-                    .add_device(devicemanager::Device::new("debug-fingerprint".to_string(),
-                                                           "debug-hostname".to_string(),
-                                                           "debug-device".to_string(),
-                                                           "debug-Os".to_string(),
-                                                           "debug-fingerprint".to_string()));
-            }
-            ("remove-device", Some(args)) => {
-                let dev_name = args.value_of("name").unwrap();
-                println!("removing device {}", dev_name);
-
-                let mut dm = devicemanager::DeviceManager::new();
-
-                match dm.remove_by_hostname(dev_name.to_string()) {
-                    None => println!("device not there"),
-                    Some(_) => println!("device removed"),
-                }
-            }
-            (_, _) => error!("command not found"),
-        }
-
-
-        std::process::exit(0);
-    }
+	let matches = App::new("My Super Program")
+		.arg(
+			Arg::with_name("gui")
+				.long("gui")
+				.help("Start the GUI for GNOMEConnect. THIS IS BLOCKING")
+				.takes_value(false)
+		)
+		.arg(
+			Arg::with_name("no-transponder")
+				.long("no-transponder")
+				.help("Disable the UDP transponder")
+				.takes_value(false)
+		)
+		.subcommand(
+			App::new(CLI_GEN_PACKETS)
+				.help("Generate Package for debugging")
+				.arg(
+					Arg::with_name("pairing")
+						.long("pairing")
+						.help("generate pairing packet")
+						.takes_value(false)
+				)
+		)
+		.subcommand(
+			App::new("debug")
+				.subcommand(App::new("add-device"))
+				.subcommand(
+					App::new("remove-device").arg(
+						Arg::with_name("name")
+							.long("name")
+							.help("remove a device")
+							.takes_value(true)
+							.required(true)
+					)
+				)
+		)
+		.get_matches();
 
 
 
 
-    let device_manager = devicemanager::DeviceManager::new();
-    let public_key = device_manager.get_public_key();
+	if let Some(sub_m) = matches.subcommand_matches(CLI_GEN_PACKETS) {
+		println!("generate packets");
+		generate_packages(sub_m.clone());
+		std::process::exit(0);
+	}
+
+	if let Some(sub_m) = matches.subcommand_matches("debug") {
+		match sub_m.subcommand()
+		{
+			("add-device", Some(_)) => {
+				devicemanager::DeviceManager::new().add_device(
+					devicemanager::Device::new(
+						"debug-fingerprint".to_string(),
+						"debug-hostname".to_string(),
+						"debug-model".to_string(),
+						"debug-Os".to_string(),
+						"debug-publickey".as_bytes().to_vec(),
+						"debug-sharedsecret".as_bytes().to_vec(),
+					)
+				);
+			}
+			("remove-device", Some(args)) => {
+				let dev_name = args.value_of("name").unwrap();
+				println!("removing device {}", dev_name);
+
+				let mut dm = devicemanager::DeviceManager::new();
+
+				match dm.remove_by_hostname(dev_name.to_string())
+				{
+					None => println!("device not there"),
+					Some(_) => println!("device removed"),
+				}
+			}
+			(_, _) => error!("command not found"),
+		}
 
 
-    println!("{}", public_key);
-
-    if !matches.is_present("transponder") {
-        server::transponder::start(device_manager.get_public_key());
-    }
-
-
-    if matches.is_present("gui") {
-        ui::MainWindow::init().launch();
-    }
+		std::process::exit(0);
+	}
 
 
 
 
+	let device_manager = devicemanager::DeviceManager::new();
+	let public_key = device_manager.get_public_key();
 
 
+	println!("{}", String::from_utf8(public_key).unwrap());
+
+	if !matches.is_present("no-transponder") {
+		server::transponder::start(device_manager.get_public_key());
+	}
 
 
-
-
-
-
-    // let gui = ui::MainWindow::init();
-    // gui.launch();
-
-
-    let server = server::gcserver::spawn_server(BIND_ADDR, SERVER_QUEUE_CAPACITY)
-        .expect("can't spwn server. Inspect previeous errors");
-
-
-    for mut connection in server.into_iter() {
-        info!("connection received");
-        debug!("Connection parameters: {}", connection.remote_ip());
-        debug!("    remote address: {}", connection.remote_ip());
+	if matches.is_present("gui") {
+		ui::MainWindow::init().launch();
+	}
 
 
 
 
 
 
-        // println!("{:#?}", connection);
-
-    }
 
 
 
 
 
-    std::process::exit(0);
+
+	// let gui = ui::MainWindow::init();
+	// gui.launch();
+
+
+	let server = server::gcserver::spawn_server(BIND_ADDR, SERVER_QUEUE_CAPACITY)
+		.expect("can't spwn server. Inspect previous errors");
+
+
+	for mut connection in server.into_iter() {
+		info!("connection received");
+		debug!("Connection parameters: {}", connection.remote_ip());
+		debug!("    remote address: {}", connection.remote_ip());
+
+
+
+
+		handle_connection(connection);
+
+
+
+
+
+		// println!("{:#?}", connection);
+
+	}
+
+	std::process::exit(0);
+}
+
+
+
+
+fn generate_packages(matches: clap::ArgMatches)
+{
+	if matches.is_present("pairing") {
+		let example = server::gcserver::Package {
+			fingerprint: "nootnoot".to_string(),
+			what: server::gcserver::Type::PairRequest(packets::Pairing::gen_example()),
+		};
+
+		print_packet(example);
+	}
+
+
+
+
+
+	fn print_packet<T: Serialize>(packet: T)
+	{
+		let string = serde_json::to_string_pretty(&packet).unwrap();
+
+		println!("{}", string);
+	}
+
 }
 
 
@@ -175,31 +222,15 @@ fn main() {
 
 
 
+fn handle_connection(conn: StreamHandler) {
+	info!("start stream handler");
+	println!("{:#?}", conn);
 
 
+	// if !conn.is_paired() {
+	// 	return;
+	// }
 
 
-
-
-
-
-fn generate_packages(matches: clap::ArgMatches) {
-    if matches.is_present("pairing") {
-        let example = server::gcserver::Package {
-            what: server::gcserver::Type::PairRequest(packets::Pairing::gen_example()),
-        };
-
-        print_packet(example);
-    }
-
-
-
-
-
-    fn print_packet<T: Serialize>(packet: T) {
-        let string = serde_json::to_string_pretty(&packet).unwrap();
-
-        println!("{}", string);
-    }
 
 }
