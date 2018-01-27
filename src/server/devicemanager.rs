@@ -10,6 +10,7 @@ use server::packets;
 use std::collections::HashMap;
 use std::fs;
 use std::path;
+use std::io::Write;
 
 
 
@@ -182,7 +183,7 @@ impl DeviceManager {
 	}
 
 
-	fn get_rsa(&self) -> rsa::Rsa<pkey::Private>
+	pub fn get_rsa(&self) -> rsa::Rsa<pkey::Private>
 	{
 		rsa::Rsa::private_key_from_pem(&self.priv_pem)
 			.expect("something went from while restoring private key")
@@ -265,10 +266,14 @@ impl DeviceManager {
 
 		let mut decrypted: Vec<u8> = Vec::new();
 
+		let mut fd = fs::File::create("data").unwrap();
+
+		fd.write_all(&data);
 
 		let result = mykey.private_decrypt(
-			&data, decrypted.as_mut_slice(),
-			rsa::Padding::PKCS1
+			&data,
+			decrypted.as_mut_slice(),
+			rsa::Padding::NONE
 		);
 
 		println!("{:?}", result);

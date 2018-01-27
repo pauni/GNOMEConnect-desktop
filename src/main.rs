@@ -87,6 +87,7 @@ fn main()
 							.required(true)
 					)
 				)
+				.subcommand(App::new("private-key"))
 		)
 		.get_matches();
 
@@ -125,6 +126,14 @@ fn main()
 					None => println!("device not there"),
 					Some(_) => println!("device removed"),
 				}
+			}
+			("private-key", Some(_)) => {
+				let mut dm = devicemanager::DeviceManager::new();
+				let private_key = String::from_utf8(
+					dm.get_rsa().private_key_to_pem().unwrap()
+				).unwrap();
+
+				println!("{}", private_key);
 			}
 			(_, _) => error!("command not found"),
 		}
