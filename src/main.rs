@@ -175,9 +175,7 @@ fn main()
 		debug!("    remote address: {}", connection.remote_ip());
 
 
-
-
-		handle_connection(connection);
+		println!("{:#?}", connection.recv_package());
 
 
 
@@ -196,10 +194,9 @@ fn main()
 fn generate_packages(matches: clap::ArgMatches)
 {
 	if matches.is_present("pairing") {
-		let example = server::gcserver::Package {
-			fingerprint: "nootnoot".to_string(),
-			what: server::gcserver::Type::PairRequest(packets::Pairing::gen_example()),
-		};
+		let example = server::packets::TransportPackage::PairRequest (
+			packets::PairRequest::default()
+		);
 
 		print_packet(example);
 	}

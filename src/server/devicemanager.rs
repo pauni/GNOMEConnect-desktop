@@ -121,7 +121,7 @@ impl DeviceManager {
 	}
 
 
-	fn rsa(&self) -> rsa::Rsa
+	pub fn rsa(&self) -> rsa::Rsa
 	{
 		rsa::Rsa::private_key_from_pem(&self.priv_pem).unwrap()
 	}
@@ -157,26 +157,29 @@ impl DeviceManager {
 
 
 
-	pub fn pair_device(&self, pairing: packets::Pairing) -> Option<()>
+	pub fn pair_device(&self, pairing: packets::PairRequest) -> Option<()>
 	{
 		// https://docs.rs/openssl/0.9.23/openssl/sign/index.html
 
-		let rsa = rsa::Rsa::private_key_from_pem(&self.priv_pem).unwrap();
-		let keypair = pkey::PKey::from_rsa(rsa).unwrap();
 
+		unimplemented!();
 
-		let signature = base64::decode(&pairing.signature).unwrap();
-		let message = pairing.message;
-
-		let mut verifier = Verifier::new(MessageDigest::sha256(), &keypair).unwrap();
-		verifier.update(&message.as_bytes());
-
-
-		verifier.verify(&signature);
-
-
-
-		None
+		// let rsa = rsa::Rsa::private_key_from_pem(&self.priv_pem).unwrap();
+		// let keypair = pkey::PKey::from_rsa(rsa).unwrap();
+		//
+		//
+		// let signature = base64::decode(&pairing.signature).unwrap();
+		// let message = pairing.message;
+		//
+		// let mut verifier = Verifier::new(MessageDigest::sha256(), &keypair).unwrap();
+		// verifier.update(&message.as_bytes());
+		//
+		//
+		// verifier.verify(&signature);
+		//
+		//
+		//
+		// None
 	}
 
 

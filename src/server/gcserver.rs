@@ -9,6 +9,8 @@ use std::net::TcpStream;
 use std::sync::mpsc::{self, Receiver, SyncSender};
 use std::thread;
 use std::ops::Add;
+use base64;
+use openssl::rsa;
 
 
 
@@ -73,21 +75,6 @@ pub fn start_listener_loop(bind_addr: &'static str, gcserver_channel: SyncSender
 
 
 
-#[derive(Debug, Hash, Clone, Serialize, Deserialize)]
-pub enum Type {
-	PairRequest(packets::Pairing),
-	EncryptedData(String),
-}
-
-
-
-
-
-#[derive(Debug, Hash, Clone, Serialize, Deserialize)]
-pub struct Package {
-	pub fingerprint: String,
-	pub what: Type,
-}
 
 
 
@@ -95,8 +82,6 @@ pub struct Package {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct IndroductionPackage {
-	// fingerprint: String,
-	// encryption: EncryptionMethod,
 	public_key: String,
 }
 
@@ -125,12 +110,15 @@ pub struct ErrorPackage {
 	message: String,
 }
 
+
+
 /// Handle for the raw Stream and encryption
 #[derive(Debug)]
 pub struct StreamHandler {
 	stream: TcpStream,
 	remote_ip: SocketAddr,
 	remote_public_key: Vec<u8>,
+	device_manager: devicemanager::DeviceManager,
 }
 
 
@@ -187,12 +175,30 @@ impl StreamHandler {
 				stream: stream,
 				remote_ip: remote_addr,
 				remote_public_key: remote_key.as_bytes().to_vec(),
+				device_manager: dm,
 			}
 		)
 	}
 
 
 
+
+	pub fn recv_package(self) -> packets::TransportPackage {
+		let mut bufreader = BufReader::new(self.stream);
+
+		let mut line = String::new();
+		bufreader.read_line(&mut line);
+
+
+		let encrypted = base64::decode(&line).unwrap();
+
+		let dm = self.device_manager;
+		let decrypted = dm.decrypt_asym(encrypted).unwrap();
+
+		let line = String::from_utf8(decrypted).unwrap();
+
+		serde_json::from_str(&line).unwrap()
+	}
 
 
 

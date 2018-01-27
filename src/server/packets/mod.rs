@@ -20,10 +20,17 @@ use std;
 #[derive(Debug, Hash, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct TransportHeader {
-	pub fingerprint: String,
 	pub version: Option<i64>,
 	#[serde(rename = "type")]
 	pub type_: Action,
+}
+
+
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case", tag="type", content="data")]
+pub enum TransportPackage {
+	PairRequest(PairRequest)
 }
 
 
@@ -32,7 +39,7 @@ pub struct TransportHeader {
 
 
 
-#[derive(Debug, Hash, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct ResponseHeader {
 	pub fingerprint: String,
@@ -45,35 +52,13 @@ pub struct ResponseHeader {
 
 
 
-#[derive(Debug, Hash, Clone, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub struct Pairing {
-	pub message: String,
-	pub signature: String,
-	pub public_key: String,
+pub struct PairRequest {
+	pub shared_secret: String,
 	pub fingerprint: String,
+	pub device_info: DeviceInfo
 }
-
-
-
-impl Pairing {
-	pub fn gen_example() -> Self
-	{
-		Self {
-			message: "<encrypted message>".to_string(),
-			signature: "<DSA-signature>".to_string(),
-			public_key: "<public key>".to_string(),
-			fingerprint: "<fingerprint>".to_string(),
-		}
-	}
-}
-
-
-
-
-
-
-
 
 
 
@@ -91,26 +76,12 @@ pub enum Action {
 
 
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GeneralDeviceInformation {
-	pub device: String,
-	pub os: String,
-	pub public_key: String,
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct DeviceInfo {
+	pub device_name: String,
 	pub fingerprint: String,
-}
-
-
-
-impl GeneralDeviceInformation {
-	pub fn new_for_me() -> Self
-	{
-		Self {
-			device: "foo".into(),
-			os: "debian".into(),
-			public_key: "no boi".into(),
-			fingerprint: "noot".into(),
-		}
-	}
+	pub version: f64,
+	pub os: String,
 }
 
 
@@ -118,7 +89,7 @@ impl GeneralDeviceInformation {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum PairingAction {
+pub enum PairingResponse {
 	Request,
 	Denied,
 	Accepted,
@@ -138,27 +109,7 @@ pub struct PairInfo {
 
 
 
-#[derive(Debug, Hash, Clone, Serialize, Deserialize)]
-#[serde(tag = "step", content = "data", rename_all = "snake_case")]
-pub enum PairingStep {
-	#[serde(rename = "1")]
-	KeyRx(String),
 
-	#[serde(rename = "2")]
-	KeyTx(String),
-
-	#[serde(rename = "3")]
-	InformationRx(String),
-
-	#[serde(rename = "4")]
-	InformationTx(String),
-
-	#[serde(rename = "1")]
-	KeyExchange_(String),
-
-	#[serde(rename = "1")]
-	KeyExchange__(String),
-}
 
 
 
