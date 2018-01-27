@@ -189,6 +189,8 @@ impl StreamHandler {
 		let mut line = String::new();
 		bufreader.read_line(&mut line);
 
+		println!("{:?}", line);
+
 
 		let encrypted = base64::decode(&line).unwrap();
 
