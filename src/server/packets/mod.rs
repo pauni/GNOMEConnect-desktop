@@ -56,7 +56,6 @@ pub struct ResponseHeader {
 #[serde(rename_all = "snake_case")]
 pub struct PairRequest {
 	pub shared_secret: String,
-	pub fingerprint: String,
 	pub device_info: DeviceInfo
 }
 
