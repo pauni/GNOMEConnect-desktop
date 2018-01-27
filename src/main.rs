@@ -17,6 +17,7 @@ extern crate pretty_env_logger;
 extern crate crypto;
 extern crate serde;
 extern crate clap;
+extern crate rand;
 
 mod config;
 mod rsa;
@@ -177,11 +178,13 @@ fn main()
 
 		println!("{:#?}", connection.recv_package());
 
+		println!("{:#?}", connection.recv_package());
 
 
 
 
-		// println!("{:#?}", connection);
+
+		println!("{:#?}", connection);
 
 	}
 

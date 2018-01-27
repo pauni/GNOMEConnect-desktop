@@ -164,20 +164,14 @@ impl StreamHandler {
 
 
 
-	pub fn recv_package(self) -> packets::TransportPackage {
+	pub fn recv_package(&mut self) -> packets::TransportPackage {
 		debug!("receive package");
 
-		let mut bufreader = BufReader::new(self.stream);
-
-		let mut line = String::new();
-		bufreader.read_line(&mut line);
-
-		println!("{:?}", line);
-
+		let line = self.read_line();
 
 		let encrypted = base64::decode(&line).unwrap();
 
-		let dm = self.device_manager;
+		let dm = &self.device_manager;
 		let decrypted = dm.decrypt_asym(encrypted).unwrap();
 
 		let line = String::from_utf8(decrypted).unwrap();
@@ -188,19 +182,14 @@ impl StreamHandler {
 
 
 
-	pub fn read_line(self) -> String
+	pub fn read_line(&mut self) -> String
 	{
-		let mut buf_stream = BufReader::new(self.stream);
+		let mut line = String::new();
+		BufReader::new(&self.stream).read_line(&mut line)
+			.expect("can't read line");
 
-		// read the data
-		let mut data = String::new();
-		buf_stream.read_line(&mut data).unwrap();
-
-		debug!("read {:6} bytes", data.len());
-
-		// hand back the stream
-
-		data
+		debug!("read {:6} bytes", line.len());
+		line
 	}
 
 

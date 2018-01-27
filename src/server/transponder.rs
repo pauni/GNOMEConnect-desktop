@@ -59,7 +59,7 @@ fn transponder_loop(udp_sock: UdpSocket, public_key: Vec<u8>)
 
 
 
-		// debug!("received discovery from {}", remote_addr);
+		debug!("received discovery from {}", remote_addr);
 
 
 		let echo = EchoSignal {
@@ -74,11 +74,12 @@ fn transponder_loop(udp_sock: UdpSocket, public_key: Vec<u8>)
 
 		remote_addr.set_port(4112);
 
+		debug!("sending to {:?}", remote_addr);
+
 		let send = to_json(&echo).unwrap();
 		udp_sock
 			.send_to(&send.clone().into_bytes(), remote_addr)
 			.unwrap();
 
-		debug!("responding {}", send);
 	}
 }
