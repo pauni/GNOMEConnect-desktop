@@ -1,10 +1,9 @@
 use base64;
 use crypto::digest::Digest;
-use openssl::sha;
 use openssl::hash::MessageDigest;
 use openssl::pkey;
 use openssl::rsa;
-use openssl::rsa::Rsa;
+use openssl::sha;
 use openssl::sign::Verifier;
 use serde_json;
 use server::packets;
@@ -52,9 +51,9 @@ impl Device {
 	}
 
 
-	fn rsa_key(&self) -> Rsa
+	fn rsa_key(&self) -> rsa::Rsa<pkey::Public>
 	{
-		Rsa::public_key_from_pem(&self.public_key).unwrap()
+		rsa::Rsa::public_key_from_pem(&self.public_key).unwrap()
 	}
 }
 
@@ -121,7 +120,7 @@ impl DeviceManager {
 	}
 
 
-	pub fn rsa(&self) -> rsa::Rsa
+	pub fn rsa(&self) -> rsa::Rsa<pkey::Private>
 	{
 		rsa::Rsa::private_key_from_pem(&self.priv_pem).unwrap()
 	}
@@ -183,9 +182,9 @@ impl DeviceManager {
 	}
 
 
-	fn get_rsa(&self) -> Rsa
+	fn get_rsa(&self) -> rsa::Rsa<pkey::Private>
 	{
-		Rsa::private_key_from_pem(&self.priv_pem)
+		rsa::Rsa::private_key_from_pem(&self.priv_pem)
 			.expect("something went from while restoring private key")
 	}
 
