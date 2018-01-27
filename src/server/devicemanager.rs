@@ -267,7 +267,12 @@ impl DeviceManager {
 		let mut decrypted: Vec<u8> = Vec::new();
 
 
-		let result = mykey.private_decrypt(&data, decrypted.as_mut_slice(), rsa::Padding::from_raw(0));
+		let result = mykey.private_decrypt(
+			&data, decrypted.as_mut_slice(),
+			rsa::Padding::PKCS1
+		);
+
+		println!("{:?}", result);
 
 		match result
 		{

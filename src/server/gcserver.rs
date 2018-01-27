@@ -169,7 +169,18 @@ impl StreamHandler {
 
 		let line = self.read_line();
 
-		let encrypted = base64::decode(&line).unwrap();
+		println!("{}", line);
+
+
+		let base64_opt = base64::Config::new (
+			base64::CharacterSet::Standard,
+			true,
+			true,
+			base64::LineWrap::NoWrap,
+		);
+
+
+		let encrypted = base64::decode_config(&line, base64_opt).expect("can't decode base64");
 
 		let dm = &self.device_manager;
 		let decrypted = dm.decrypt_asym(encrypted).unwrap();
