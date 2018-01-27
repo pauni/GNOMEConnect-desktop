@@ -1,6 +1,8 @@
+
+use gio;
 use gio::prelude::*;
-use gtk::*;
 use gtk;
+use gtk::*;
 use gtk::prelude::*;
 use std;
 use std::io::{Read, Write};
@@ -8,7 +10,6 @@ use std::net::TcpListener;
 use std::net::UdpSocket;
 use std::sync::mpsc;
 use std::thread;
-use gio;
 
 
 

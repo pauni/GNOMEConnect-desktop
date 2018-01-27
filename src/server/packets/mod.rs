@@ -30,7 +30,7 @@ pub struct TransportHeader {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case", tag="type", content="data")]
 pub enum TransportPackage {
-	PairRequest(PairRequest)
+	PairRequest(PairRequest),
 }
 
 
@@ -56,7 +56,7 @@ pub struct ResponseHeader {
 #[serde(rename_all = "snake_case")]
 pub struct PairRequest {
 	pub shared_secret: String,
-	pub device_info: DeviceInfo
+	pub device_info: DeviceInfo,
 }
 
 

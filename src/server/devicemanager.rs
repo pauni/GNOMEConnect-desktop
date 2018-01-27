@@ -9,8 +9,8 @@ use serde_json;
 use server::packets;
 use std::collections::HashMap;
 use std::fs;
-use std::path;
 use std::io::Write;
+use std::path;
 
 
 
@@ -191,10 +191,9 @@ impl DeviceManager {
 
 
 
-	pub fn load_device_with_fingerprint(&self, fingerprint: String) -> Option<Device> {
-		self.devices.get(&fingerprint).map(|x| {
-			x.to_owned()
-		})
+	pub fn load_device_with_fingerprint(&self, fingerprint: String) -> Option<Device>
+	{
+		self.devices.get(&fingerprint).map(|x| x.to_owned())
 	}
 
 
@@ -266,15 +265,9 @@ impl DeviceManager {
 
 		let mut decrypted: Vec<u8> = Vec::new();
 
-		let mut fd = fs::File::create("data").unwrap();
 
-		fd.write_all(&data);
-
-		let result = mykey.private_decrypt(
-			&data,
-			decrypted.as_mut_slice(),
-			rsa::Padding::PKCS1
-		);
+		let result = mykey
+			.private_decrypt(&data, decrypted.as_mut_slice(), rsa::Padding::PKCS1_OAEP);
 
 		println!("{:?}", result);
 

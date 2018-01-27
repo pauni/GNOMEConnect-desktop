@@ -79,15 +79,17 @@ fn main()
 			App::new("debug")
 				.subcommand(App::new("add-device"))
 				.subcommand(
-					App::new("remove-device").arg(
-						Arg::with_name("name")
-							.long("name")
-							.help("remove a device")
-							.takes_value(true)
-							.required(true)
-					)
+					App::new("remove-device")
+						.help("remove a device")
+						.arg(
+							Arg::with_name("name")
+								.long("name")
+								.help("remove a device")
+								.takes_value(true)
+								.required(true)
+						)
 				)
-				.subcommand(App::new("private-key"))
+				.subcommand(App::new("private-key").help("print saved private key"))
 		)
 		.get_matches();
 
@@ -129,9 +131,8 @@ fn main()
 			}
 			("private-key", Some(_)) => {
 				let mut dm = devicemanager::DeviceManager::new();
-				let private_key = String::from_utf8(
-					dm.get_rsa().private_key_to_pem().unwrap()
-				).unwrap();
+				let private_key = String::from_utf8(dm.get_rsa().private_key_to_pem().unwrap())
+					.unwrap();
 
 				println!("{}", private_key);
 			}
@@ -151,8 +152,7 @@ fn main()
 
 	println!("{}", String::from_utf8(public_key).unwrap());
 
-	if !matches.is_present("no-transponder") {
-	}
+	if !matches.is_present("no-transponder") {}
 
 	server::transponder::start(device_manager.get_public_key());
 
@@ -206,9 +206,8 @@ fn main()
 fn generate_packages(matches: clap::ArgMatches)
 {
 	if matches.is_present("pairing") {
-		let example = server::packets::TransportPackage::PairRequest (
-			packets::PairRequest::default()
-		);
+		let example =
+			server::packets::TransportPackage::PairRequest(packets::PairRequest::default());
 
 		print_packet(example);
 	}
@@ -231,7 +230,8 @@ fn generate_packages(matches: clap::ArgMatches)
 
 
 
-fn handle_connection(conn: StreamHandler) {
+fn handle_connection(conn: StreamHandler)
+{
 	info!("start stream handler");
 	println!("{:#?}", conn);
 

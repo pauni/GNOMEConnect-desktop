@@ -1,4 +1,3 @@
-
 use hostname::get_hostname;
 use serde::Serialize;
 use serde::de::DeserializeOwned;

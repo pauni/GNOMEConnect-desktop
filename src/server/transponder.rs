@@ -1,4 +1,3 @@
-
 use crypto::digest::Digest;
 use crypto::md5;
 use hostname;
