@@ -142,9 +142,9 @@ fn main()
 	println!("{}", String::from_utf8(public_key).unwrap());
 
 	if !matches.is_present("no-transponder") {
-		server::transponder::start(device_manager.get_public_key());
 	}
 
+	server::transponder::start(device_manager.get_public_key());
 
 	if matches.is_present("gui") {
 		ui::MainWindow::init().launch();
@@ -165,11 +165,11 @@ fn main()
 	// gui.launch();
 
 
-	let server = server::gcserver::spawn_server(BIND_ADDR, SERVER_QUEUE_CAPACITY)
+	let gcserver = server::gcserver::GCServer::spawn_server(BIND_ADDR)
 		.expect("can't spwn server. Inspect previous errors");
 
 
-	for mut connection in server.into_iter() {
+	for mut connection in gcserver {
 		info!("connection received");
 		debug!("Connection parameters: {}", connection.remote_ip());
 		debug!("    remote address: {}", connection.remote_ip());

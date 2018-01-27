@@ -26,50 +26,37 @@ const PAIRINGMODE: bool = true;
 
 
 
-pub fn spawn_server(bind_addr: &'static str, queue_size: usize) -> Option<Receiver<StreamHandler>>
-{
-	let (server_tx, server_rx) = mpsc::sync_channel(queue_size);
 
-	thread::Builder::new()
-		.name("GcEventServer".into())
-		.spawn(move || start_listener_loop(bind_addr, server_tx));
-
-
-	Some(server_rx)
+pub struct GCServer {
+	stream: TcpListener
 }
 
 
 
 
-
-
-pub fn start_listener_loop(bind_addr: &'static str, gcserver_channel: SyncSender<StreamHandler>)
-{
-	info!("start server at {}", bind_addr);
-	let tcp_server = match TcpListener::bind(bind_addr)
+impl GCServer {
+	pub fn spawn_server(bind_addr: &'static str) -> Option<Self>
 	{
-		Ok(s) => s,
-		Err(e) => panic!("can't bind to {}: {}", bind_addr, e),
-	};
+		info!("start server at {}", bind_addr);
 
-
-	debug!("start listening loop");
-
-	for stream in tcp_server.incoming() {
-		debug!("TCPconnection established");
-
-		match stream
+		match TcpListener::bind(bind_addr)
 		{
-			Ok(r) => gcserver_channel.send(StreamHandler::new(r).unwrap()),
-			Err(e) => panic!("can't accexpt stream: {}", e),
-		};
-
-		debug!("waiting for connection...");
+			Ok(s) => Some(Self {stream: s}),
+			Err(e) => panic!("can't bind to {}: {}", bind_addr, e),
+		}
 	}
 }
 
 
+impl Iterator for GCServer {
+	type Item = StreamHandler;
 
+	fn next(&mut self) -> Option<Self::Item> {
+		let (stream, addr) = self.stream.accept().unwrap();
+
+		Some(StreamHandler::new(stream).unwrap())
+	}
+}
 
 
 
@@ -141,16 +128,12 @@ impl StreamHandler {
 
 
 
-		debug!("{}", data);
 		debug!("read {} bytes from {}", data.len(), remote_addr);
 
-
-		println!("{}", data);
 
 		let package: IndroductionPackage = serde_json::from_str(&data).unwrap();
 
 
-		println!("{:#?}", package);
 
 		let remote_key = package.public_key;
 		let dm = devicemanager::DeviceManager::new();
@@ -170,20 +153,20 @@ impl StreamHandler {
 
 
 
-		Some(
-			Self {
-				stream: stream,
-				remote_ip: remote_addr,
-				remote_public_key: remote_key.as_bytes().to_vec(),
-				device_manager: dm,
-			}
-		)
+		Some(Self {
+			stream: stream,
+			remote_ip: remote_addr,
+			remote_public_key: remote_key.as_bytes().to_vec(),
+			device_manager: dm,
+		})
 	}
 
 
 
 
 	pub fn recv_package(self) -> packets::TransportPackage {
+		debug!("receive package");
+
 		let mut bufreader = BufReader::new(self.stream);
 
 		let mut line = String::new();
@@ -225,52 +208,5 @@ impl StreamHandler {
 	pub fn remote_ip(&self) -> SocketAddr
 	{
 		self.remote_ip
-	}
-}
-
-
-
-// impl Drop for StreamHandler {
-// 	fn drop(&mut self) {
-// 		debug!("dropped StreamHandler");
-// 	}
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-pub struct GCServer {
-	dev_mngr: devicemanager::DeviceManager,
-}
-
-
-
-
-
-impl GCServer {
-	fn new() -> Self
-	{
-		// let tcp_server = match TcpListener::bind(super::BIND_ADDR) {
-		//     Ok(s) => s,
-		//     Err(e) => panic!("can't bind to {}: {}", super::BIND_ADDR, e),
-		// };
-		//
-		//
-		// thread::spawn(move || {
-		//     info!("start listening at {}", super::BIND_ADDR);
-		//     start_listener_loop(tcp_server);
-		// }).join();
-
-
-		Self { dev_mngr: devicemanager::DeviceManager::new() }
 	}
 }
