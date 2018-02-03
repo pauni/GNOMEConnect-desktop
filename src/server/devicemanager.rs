@@ -262,19 +262,23 @@ impl DeviceManager {
 	{
 		let mykey = self.get_rsa();
 
+		let mut buffer = vec![0;data.len()];
 
-		let mut decrypted: Vec<u8> = Vec::new();
 
+
+
+		debug!("to length: {}", buffer.len());
 
 		let result = mykey
-			.private_decrypt(&data, decrypted.as_mut_slice(), rsa::Padding::PKCS1_OAEP);
+			.private_decrypt(&data, &mut buffer, rsa::Padding::PKCS1_OAEP);
 
-		println!("{:?}", result);
+
+		println!("{:#?}", String::from_utf8(buffer.clone()));
 
 		match result
 		{
 			Err(_) => None,
-			Ok(s) => Some(decrypted.to_vec()),
+			Ok(s) => Some(buffer.to_vec()),
 		}
 	}
 }
