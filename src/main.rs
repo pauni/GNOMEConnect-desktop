@@ -11,7 +11,6 @@ extern crate gnomeconnect;
 extern crate gtk;
 extern crate hostname;
 extern crate notify_rust;
-extern crate openssl_sys;
 extern crate openssl;
 extern crate pretty_env_logger;
 extern crate crypto;

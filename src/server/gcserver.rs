@@ -153,7 +153,7 @@ impl StreamHandler {
 
 
 
-		writeln!(stream, "{}", serde_json::to_string(&response).unwrap());
+		writeln!(stream, "{}", serde_json::to_string(&response).unwrap()).unwrap();
 
 		// stream.write_all(serde_json::to_string(&response).unwrap().add("\n").as_bytes());
 
